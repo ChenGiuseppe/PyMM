@@ -1,12 +1,6 @@
+
 import numpy as np
 import conversions as conv
-
-
-# Dictionary to help convert atomic numbers to atomic masses. Declared here
-# in case it is needed for different functions; position in the code to be
-# still evaluated. Only the most common ones are listed, to be expanded in
-# the future.
-Z_to_mass = {'1': 1.0, '6': 12.0, '7': 14.0, '8': 16.0, '16': 32.0}
 
 
 def get_input_gauss(filename: str, n_el_states: int, el_state: int,
@@ -64,7 +58,7 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
                     next(gout)
                 content = next(gout).split()
                 while '---' not in content[0]:
-                    geom.append([Z_to_mass[content[1]]] +
+                    geom.append([conv.Z2mass[content[1]]] +
                                 [float(coor) for coor in content[3:6]])
                     content = next(gout).split()
             elif 'SCF Done:  E(' in line and get_energies:
