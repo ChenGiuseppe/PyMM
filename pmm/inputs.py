@@ -35,11 +35,11 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
             charges is desired.
 
     Returns:
-        pmm_inputs (dict): "geometry": geometry (numpy.darray,
+        pmm_inputs (dict): "geometry": geometry in a.u. (numpy.darray,
                 shape=(n_atoms, 4)).
-            "energies": electronic states energies (numpy.darray,
+            "energies": electronic states energies in a.u. (numpy.darray,
                 shape=n_el_states).
-            "dip_matrix": electric dipole moment matrix (numpy.darray,
+            "dip_matrix": electric dipole moment matrix in a.u. (numpy.darray,
                 shape=(n_el_states, n_el_states, 3)). INCOMPLETE: values
                 only for the (0,i), (i,0) and the (el_state, el_state)
                 elements.
@@ -125,11 +125,11 @@ def get_tot_input_gauss(filename_scheme: str, n_el_states: int,
             charges is desired
 
     Returns:
-        pmm_inputs (dict): "geometry": geometry (numpy.darray,
+        pmm_inputs (dict): "geometry": geometry in a.u. (numpy.darray,
                 shape=(n_atoms, 4)).
-            "energies": electronic states energies (numpy.darray,
+            "energies": electronic states energies in a.u. (numpy.darray,
                 shape=n_el_states).
-            "dip_matrix": complete electric dipole moment matrix
+            "dip_matrix": complete electric dipole moment matrix in a.u.
                 (numpy.darray, shape=(n_el_states, n_el_states, 3)).
             "charges_i": RESP charges for the ith electronic state
                 (numpy.darray, shape=(n_el_states, n_atoms)).
@@ -176,5 +176,7 @@ if __name__ == '__main__':
     #                get_charges=True)
     pmm_inputs = get_tot_input_gauss('../../../Photoswitch/Norbornadiene/QC_td{}.log',
                                      9, get_charges=True)
-    for key in pmm_inputs:
-        print(key, '\n', pmm_inputs[key])
+    # for key in pmm_inputs:
+    #    print(key, '\n', pmm_inputs[key])
+    for row in pmm_inputs['geometry']:
+        print(row)

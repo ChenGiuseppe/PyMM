@@ -3,7 +3,7 @@
 
 # Dictionaries to help converting between different formats
 Z2mass = {'1': 1.0, '6': 12.0, '7': 14.0, '8': 16.0, '16': 32.0}
-mass2symbol = {}
+mass2symbol = {1.0: 'H', 12.0: 'C', 14.0: 'N', 16.0: 'O'}
 
 # Units convertion
 au2eV = 27.2113961
