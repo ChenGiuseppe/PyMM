@@ -1,5 +1,6 @@
 '''Functions needed for MD-PMM calculations'''
 
+from pmm.conversions import Bohr2Ang
 import MDAnalysis as mda
 import numpy as np
 import conversions as conv
@@ -38,17 +39,20 @@ def calc_el_field_pot(solv_coor: np.ndarray, charges: np.ndarray,
 
     Parameters:
         solv_coor (np.ndarray): (n_atoms, 3) array containing the xyz
-            coordinates of the solvent.
+            coordinates of the solvent. Units in nm that the function converts
+            in Bohr.
         charges (np.ndarray): (n_atoms) array containing the force field
             charges of the solvent.
         ref_origin (np.ndarray): point on which the electric field is applied
-            (in the PMM: center of mass the Quantum Center).
+            (in the PMM: center of mass the Quantum Center). Units in Bohr.
 
     Returns:
         el_field (np.ndarray): electric field expressed in its xyz components.
-        potential (float): electric potential.
+            In a.u..
+        potential (float): electric potential. In a.u..
     '''
-    xyz_distances = solv_coor - ref_origin
+    # converts the coordinates from the trajectory in a.u.
+    xyz_distances = solv_coor * 10 / Bohr2Ang - ref_origin
     # Fastest way to calculate norm of each row according to the answer of
     # Nico Schlömer from:
     # https://stackoverflow.com/questions/7741878/how-to-apply-numpy-linalg-\

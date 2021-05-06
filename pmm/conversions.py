@@ -8,3 +8,4 @@ mass2symbol = {1.0: 'H', 12.0: 'C', 14.0: 'N', 16.0: 'O'}
 # Units convertion
 au2eV = 27.2113961
 Debye2au = 0.393456
+Bohr2Ang = 0.529177249
