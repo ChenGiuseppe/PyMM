@@ -25,7 +25,7 @@ def convert2Universe(geometry: np.ndarray) -> mda.Universe:
     masses = [atom[0] for atom in geometry]
     univ_geom.add_TopologyAttr('mass', masses)
     # convert masses to atom type
-    #print([atom[0] for atom in geometry])
+    # print([atom[0] for atom in geometry])
     atom_types = [conv.mass2symbol[atom[0]] for atom in geometry]
     univ_geom.add_TopologyAttr('type', atom_types)
     # add xyz coordinates
@@ -93,7 +93,8 @@ def rotate_dip_matrix(dip_matrix: np.ndarray,
             calculation. In a.u..
 
     Returns:
-        rot_dip_matrix (np.ndarray): rotated electric dipole moment matrix. In a.u..
+        rot_dip_matrix (np.ndarray): rotated electric dipole moment matrix.
+            Expressed in a.u..
     '''
     # shift origin to the centers of mass of frame_geom to (0, 0, 0).
     cdm = traj_geom.atoms.center_of_mass()
@@ -137,7 +138,8 @@ def calc_el_field_pot(solv_coor: np.ndarray, charges: np.ndarray,
 
 
 def pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
-               el_field: np.ndarray, potential: float, qc_qtot=0) -> np.ndarray:
+               el_field: np.ndarray,
+               potential: float, qc_qtot=0) -> np.ndarray:
     '''Construct PMM matrix.
 
     Parameters:
@@ -159,9 +161,9 @@ def pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
         '''
     # TODO #1 Add reference to PMM article.
     # diagonal elements
-    pmm_matrix = np.diag(energies + qc_qtot*potential) + -1*np.einsum('i,jki->jk', el_field, rot_dip_matrix)
+    pmm_matrix = np.diag(energies + qc_qtot*potential)
+    + -1*np.einsum('i,jki->jk', el_field, rot_dip_matrix)
     return pmm_matrix
-
 
 
 if __name__ == '__main__':
