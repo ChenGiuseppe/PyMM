@@ -14,10 +14,10 @@ def convert2Universe(geometry: np.ndarray) -> mda.Universe:
 
     Parameters:
         geometry (np.ndarray): (n_atoms, 4) matrix, containing atomic masses
-            and xyz coordinates.
+            and xyz coordinates. Units assumed to be in Angstrom.
     Returns:
         univ_geom (mda.Universe): xyz coordinates of the systems and atom
-            types.
+            types. Units in Angstrom.
     '''
     univ_geom = mda.Universe.empty(geometry.shape[0], trajectory=True)
     # print(univ_geom)

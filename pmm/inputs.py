@@ -10,6 +10,9 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
     of the electric dipole moment matrix and/or the RESP charges from the
     Gaussian (specifically 16, support for other versions is to be verified)
     software calculation outputs.
+    The geometry extracted is in the "standard orientation" if this can be
+    found, while if the Gaussian calculation was performed using the keyword
+    NoSymmetry, "Input orientation" is selected instead.
     The permanent dipole moment and the RESP charges extracted refer to
     the only electronic state considered in the Gaussian calculaton
     (ground state or excited state).
@@ -49,6 +52,8 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
     pmm_inputs = {}
     with open(filename, 'r') as gout:
         geom = []
+        # geometry using the input orientation instead of the standard one.
+        geom_no_symm = []
         energies = np.zeros(n_el_states)
         dip_matrix = np.zeros((n_el_states, n_el_states, 3))
         charges = []
@@ -59,6 +64,14 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
                 content = next(gout).split()
                 while '---' not in content[0]:
                     geom.append([conv.Z2mass[content[1]]] +
+                                [float(coor) for coor in content[3:6]])
+                    content = next(gout).split()
+            elif 'Input orientation:' in line and get_geom:
+                for i in range(4):
+                    next(gout)
+                content = next(gout).split()
+                while '---' not in content[0]:
+                    geom_no_symm.append([conv.Z2mass[content[1]]] +
                                 [float(coor) for coor in content[3:6]])
                     content = next(gout).split()
             elif 'SCF Done:  E(' in line and get_energies:
@@ -97,8 +110,10 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
                 while content[0].isnumeric():
                     charges.append(float(content[2]))
                     content = next(gout).split()
-        if get_geom:
+        if get_geom and geom:
             pmm_inputs['geometry'] = np.array(geom)
+        elif get_geom and geom_no_symm:
+            pmm_inputs['geometry'] = np.array(geom_no_symm)
         if get_energies:
             pmm_inputs['energies'] = energies
         if get_diag_dip or get_trans_dip:
