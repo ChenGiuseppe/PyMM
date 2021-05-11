@@ -162,7 +162,7 @@ def pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
     # TODO #1 Add reference to PMM article.
     # diagonal elements
     pmm_matrix = np.diag(energies + qc_qtot*potential)
-    + -1*np.einsum('i,jki->jk', el_field, rot_dip_matrix)
+    - 1 * np.einsum('i,jki->jk', el_field, rot_dip_matrix)
     return pmm_matrix
 
 
