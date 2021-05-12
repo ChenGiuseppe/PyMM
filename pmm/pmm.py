@@ -1,11 +1,14 @@
 '''Functions needed for MD-PMM calculations'''
 
-from conversions import Bohr2Ang
+from pmm.inputs import get_tot_input_gauss
+import sys
+from argparse import ArgumentParser, FileType
 import MDAnalysis as mda
 from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
 import numpy as np
-import conversions as conv
+import pmm.conversions as conv
+from pmm.conversions import Bohr2Ang
 
 
 def convert2Universe(geometry: np.ndarray) -> mda.Universe:
@@ -117,12 +120,12 @@ def calc_el_field_pot(solv_coor: np.ndarray, charges: np.ndarray,
 
     Parameters:
         solv_coor (np.ndarray): (n_atoms, 3) array containing the xyz
-            coordinates of the solvent. Units in nm that the function converts
-            in Bohr.
+            coordinates of the solvent. Units Angstrom nm that the function
+            converts in Bohr.
         charges (np.ndarray): (n_atoms) array containing the force field
             charges of the solvent.
         ref_origin (np.ndarray): point on which the electric field is applied
-            (in the PMM: center of mass the Quantum Center). Units in Bohr.
+            (in the PMM: center of mass the Quantum Center). Units Angstrom.
 
     Returns:
         el_field (np.ndarray): electric field expressed in its xyz components.
@@ -130,14 +133,14 @@ def calc_el_field_pot(solv_coor: np.ndarray, charges: np.ndarray,
         potential (float): electric potential. In a.u..
     '''
     # converts the coordinates from the trajectory in a.u.
-    xyz_distances = ref_origin - solv_coor * 10 / Bohr2Ang
+    xyz_distances = (ref_origin - solv_coor) / Bohr2Ang
     distances = np.sqrt(np.einsum('ij,ij->i', xyz_distances, xyz_distances))
     el_field = (((charges * xyz_distances.T) / distances ** 3).T).sum(axis=0)
     potential = (charges / distances).sum()
     return el_field, potential
 
 
-def pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
+def calc_pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
                el_field: np.ndarray,
                potential: float, qc_qtot=0) -> np.ndarray:
     '''Construct PMM matrix.
@@ -166,8 +169,60 @@ def pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
     return pmm_matrix
 
 
+def main():
+    '''CLI program to perform MD-PMM calculations.
+    TODO: #3 add documentation.
+    '''
+    parser = ArgumentParser(prog='pmm',
+                            description='Perform MD-PMM calculation.')
+    parser.add_argument('-qm', '--qm-path', action='store', type=str)
+    parser.add_argument('-r', '--roots', action='store', type=int)
+    parser.add_argument('-traj', '--trajectory-path', action='store',
+                        type=str)
+    parser.add_argument('-top', '--topology-path', action='store', type=str)
+    parser.add_argument('-ch', '--charges', action='store_true',
+                        default=False, dest='charges')
+    parser.add_argument('-q', '--qc-charge', action='store', default=0,
+                        type=int)
+    parser.add_argument('-nm', '--mm-indexes', action='store', type=str,
+                        help='indexes of the QC in the MM trajectory.')
+    parser.add_argument('-nq', '--qm-indexes', action='store', type=str,
+                        default=False)
+    cmdline = parser.parse_args()
+
+    # gather the electronic properties of the QC.
+    qm_inputs = get_tot_input_gauss(cmdline.qm_path, cmdline.roots)
+    # geometry units: they are assumed to be Gaussian defaults (Angstrom).
+    qc_ref = convert2Universe(qm_inputs['geometry'])
+    # cut only the portion of interest of the QC.
+    if cmdline.qm_indexes:
+        qc_ref = cut_qc(qc_ref, cmdline.qm_indexes)
+    # shift the origin to the center of mass.
+    qc_ref.atoms.positions -= qc_ref.atoms.center_of_mass()
+    # load the MM simulation trajectory.
+    mm_traj = mda.Universe(cmdline.topology_path, cmdline.trajectory_path)
+    # MD-PMM calculation.
+    eigvals = []
+    eigvecs = []
+    for frame in mm_traj.trajectory:
+        # Divide the coordinates in the frame between QC and solvent.
+        # NOTE: the indexes are inclusive of the extremes.
+        qc_traj, solv_traj = split_qc_solv(mm_traj, cmdline.mm_indexes)
+        el_field, potential = calc_el_field_pot(solv_traj.atoms.positions,
+                                                solv_traj.atoms.charges,
+                                                qc_traj.atoms.center_of_mass())
+        rot_dip_matrix = rotate_dip_matrix(qm_inputs['dip_matrix'], qc_traj,
+                                           qc_ref)
+        pmm_matrix = calc_pmm_matrix(qm_inputs['energies'], rot_dip_matrix,
+                                     el_field, potential,
+                                     qc_qtot=cmdline.qc_charge)
+        eigval, eigvec = np.linalg.eig(pmm_matrix)
+        eigvals.append(eigval)
+        eigvecs.append(eigvec)
+    np.savetxt('eigvals.txt', np.array(eigvals))
+    #np.savetxt('eigvecs.txt', np.array(eigvecs))
+    return 0
+
+
 if __name__ == '__main__':
-    h2o = np.array([[16.0, 0,        0,       0],  # oxygen
-                   [1.0, 0.95908, -0.02691, 0.03231],  # hydrogen
-                   [1.0, -0.28004, -0.58767, 0.70556]])
-    convert2Universe(h2o)
+    main()

@@ -1,6 +1,6 @@
 
 import numpy as np
-import conversions as conv
+import pmm.conversions as conv
 
 
 def get_input_gauss(filename: str, n_el_states: int, el_state: int,
