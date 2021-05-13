@@ -1,6 +1,6 @@
 '''Functions needed for MD-PMM calculations'''
 
-from pmm.inputs import get_tot_input_gauss
+from pmm.inputs import get_pmm_input, get_tot_input_gauss
 import sys
 from argparse import ArgumentParser, FileType
 import MDAnalysis as mda
@@ -135,14 +135,14 @@ def calc_el_field_pot(solv_coor: np.ndarray, charges: np.ndarray,
     # converts the coordinates from the trajectory in a.u.
     xyz_distances = (ref_origin - solv_coor) / Bohr2Ang
     distances = np.sqrt(np.einsum('ij,ij->i', xyz_distances, xyz_distances))
-    el_field = (((charges * xyz_distances.T) / distances ** 3).T).sum(axis=0)
+    el_field = (((charges * xyz_distances.T) / (distances ** 3)).T).sum(axis=0)
     potential = (charges / distances).sum()
     return el_field, potential
 
 
 def calc_pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
-               el_field: np.ndarray,
-               potential: float, qc_qtot=0) -> np.ndarray:
+                    el_field: np.ndarray,
+                    potential: float, qc_qtot=0) -> np.ndarray:
     '''Construct PMM matrix.
 
     Parameters:
@@ -164,8 +164,8 @@ def calc_pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
         '''
     # TODO #1 Add reference to PMM article.
     # diagonal elements
-    pmm_matrix = np.diag(energies + qc_qtot*potential)
-    - 1 * np.einsum('i,jki->jk', el_field, rot_dip_matrix)
+    pmm_matrix = np.diag(energies + qc_qtot*potential) \
+        - 1 * np.einsum('i,jki->jk', el_field, rot_dip_matrix)
     return pmm_matrix
 
 
@@ -188,10 +188,14 @@ def main():
                         help='indexes of the QC in the MM trajectory.')
     parser.add_argument('-nq', '--qm-indexes', action='store', type=str,
                         default=False)
+    parser.add_argument('-sq', '--qm-source', action='store', type=str,
+                        default='gaussian')
+    parser.add_argument('-sm', '--mm-source', action='store', type=str,
+                        default='gromacs')
     cmdline = parser.parse_args()
 
-    # gather the electronic properties of the QC.
-    qm_inputs = get_tot_input_gauss(cmdline.qm_path, cmdline.roots)
+    # gather the electronic properties of the QC and load the MM trajectory
+    qm_inputs, mm_traj = get_pmm_input(cmdline)
     # geometry units: they are assumed to be Gaussian defaults (Angstrom).
     qc_ref = convert2Universe(qm_inputs['geometry'])
     # cut only the portion of interest of the QC.
@@ -199,15 +203,14 @@ def main():
         qc_ref = cut_qc(qc_ref, cmdline.qm_indexes)
     # shift the origin to the center of mass.
     qc_ref.atoms.positions -= qc_ref.atoms.center_of_mass()
-    # load the MM simulation trajectory.
-    mm_traj = mda.Universe(cmdline.topology_path, cmdline.trajectory_path)
     # MD-PMM calculation.
     eigvals = []
     eigvecs = []
+    # Divide the coordinates in the frame between QC and solvent.
+    # NOTE: the indexes are inclusive of the extremes.
+    qc_traj, solv_traj = split_qc_solv(mm_traj, cmdline.mm_indexes)
     for frame in mm_traj.trajectory:
-        # Divide the coordinates in the frame between QC and solvent.
-        # NOTE: the indexes are inclusive of the extremes.
-        qc_traj, solv_traj = split_qc_solv(mm_traj, cmdline.mm_indexes)
+        # print(solv_traj.atoms.positions)
         el_field, potential = calc_el_field_pot(solv_traj.atoms.positions,
                                                 solv_traj.atoms.charges,
                                                 qc_traj.atoms.center_of_mass())
@@ -216,11 +219,15 @@ def main():
         pmm_matrix = calc_pmm_matrix(qm_inputs['energies'], rot_dip_matrix,
                                      el_field, potential,
                                      qc_qtot=cmdline.qc_charge)
+        # print(pmm_matrix)
+        # print(- 1 * np.einsum('i,jki->jk', el_field, rot_dip_matrix))
         eigval, eigvec = np.linalg.eig(pmm_matrix)
         eigvals.append(eigval)
         eigvecs.append(eigvec)
     np.savetxt('eigvals.txt', np.array(eigvals))
-    #np.savetxt('eigvecs.txt', np.array(eigvecs))
+    # print(eigvecs)
+    # print(solv_traj.atoms.positions.shape)
+    # np.savetxt('eigvecs.txt', np.array(eigvecs))
     return 0
 
 

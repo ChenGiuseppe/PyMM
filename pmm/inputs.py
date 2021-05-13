@@ -1,6 +1,19 @@
 
+import MDAnalysis as mda
 import numpy as np
 import pmm.conversions as conv
+
+
+def legacy_input(filename: str) -> dict:
+    '''Provide the inputs necessary to the MD-PMM calculation using the legacy
+    format:
+    1. geometry filename
+    2. dipole matrix filename
+    3. roots 
+    4. solvent index
+    [..]
+    '''
+    pass
 
 
 def get_input_gauss(filename: str, n_el_states: int, el_state: int,
@@ -38,7 +51,7 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
             charges is desired.
 
     Returns:
-        pmm_inputs (dict): "geometry": geometry in a.u. (numpy.darray,
+        qm_inputs (dict): "geometry": geometry in Angstrom (numpy.darray,
                 shape=(n_atoms, 4)).
             "energies": electronic states energies in a.u. (numpy.darray,
                 shape=n_el_states).
@@ -49,7 +62,7 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
             "charges": RESP charges for the el_state electronic state
                 (numpy.darray, shape=(n_el_states, n_atoms)).
     '''
-    pmm_inputs = {}
+    qm_inputs = {}
     with open(filename, 'r') as gout:
         geom = []
         # geometry using the input orientation instead of the standard one.
@@ -111,16 +124,16 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
                     charges.append(float(content[2]))
                     content = next(gout).split()
         if get_geom and geom:
-            pmm_inputs['geometry'] = np.array(geom)
+            qm_inputs['geometry'] = np.array(geom)
         elif get_geom and geom_no_symm:
-            pmm_inputs['geometry'] = np.array(geom_no_symm)
+            qm_inputs['geometry'] = np.array(geom_no_symm)
         if get_energies:
-            pmm_inputs['energies'] = energies
+            qm_inputs['energies'] = energies
         if get_diag_dip or get_trans_dip:
-            pmm_inputs['dip_matrix'] = dip_matrix
+            qm_inputs['dip_matrix'] = dip_matrix
         if get_charges:
-            pmm_inputs['charges'] = np.array(charges)
-        return pmm_inputs
+            qm_inputs['charges'] = np.array(charges)
+        return qm_inputs
 
 
 def get_tot_input_gauss(filename_scheme: str, n_el_states: int,
@@ -140,7 +153,7 @@ def get_tot_input_gauss(filename_scheme: str, n_el_states: int,
             charges is desired
 
     Returns:
-        pmm_inputs (dict): "geometry": geometry in a.u. (numpy.darray,
+        qm_inputs (dict): "geometry": geometry in Angstrom (numpy.darray,
                 shape=(n_atoms, 4)).
             "energies": electronic states energies in a.u. (numpy.darray,
                 shape=n_el_states).
@@ -152,46 +165,78 @@ def get_tot_input_gauss(filename_scheme: str, n_el_states: int,
     if '{}' not in filename_scheme:
         print('filename_scheme must contain "{}"')
         raise IOError
-    pmm_inputs = {}
+    qm_inputs = {}
     for state in range(n_el_states):
         if state == 0:
-            pmm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
+            qm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
                                              n_el_states, state,
                                              get_energies=False,
                                              get_trans_dip=False,
                                              get_charges=get_charges)
-            pmm_inputs['geometry'] = pmm_inputs_tmp['geometry']
-            pmm_inputs['dip_matrix'] = pmm_inputs_tmp['dip_matrix']
+            qm_inputs['geometry'] = qm_inputs_tmp['geometry']
+            qm_inputs['dip_matrix'] = qm_inputs_tmp['dip_matrix']
             if get_charges:
-                pmm_inputs[f'charges_{state}'] = pmm_inputs_tmp['charges']
+                qm_inputs[f'charges_{state}'] = qm_inputs_tmp['charges']
         elif state == 1:
-            pmm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
+            qm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
                                              n_el_states, state,
                                              get_geom=False,
                                              get_charges=get_charges)
-            pmm_inputs['energies'] = pmm_inputs_tmp['energies']
-            pmm_inputs['dip_matrix'] += pmm_inputs_tmp['dip_matrix']
+            qm_inputs['energies'] = qm_inputs_tmp['energies']
+            qm_inputs['dip_matrix'] += qm_inputs_tmp['dip_matrix']
             if get_charges:
-                pmm_inputs[f'charges_{state}'] = pmm_inputs_tmp['charges']
+                qm_inputs[f'charges_{state}'] = qm_inputs_tmp['charges']
         else:
-            pmm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
+            qm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
                                              n_el_states, state,
                                              get_geom=False,
                                              get_energies=False,
                                              get_charges=get_charges)
-            pmm_inputs['dip_matrix'][state, state, :] =\
-                pmm_inputs_tmp['dip_matrix'][state, state, :]
+            qm_inputs['dip_matrix'][state, state, :] =\
+                qm_inputs_tmp['dip_matrix'][state, state, :]
             if get_charges:
-                pmm_inputs[f'charges_{state}'] = pmm_inputs_tmp['charges']
-    return pmm_inputs
+                qm_inputs[f'charges_{state}'] = qm_inputs_tmp['charges']
+    return qm_inputs
 
+
+def get_pmm_input(cmdline) -> tuple[dict, mda.Universe]:
+    '''Obtain the pmm inputs according to the different sources.
+
+    Parameters:
+        cmdline (argparse.Namespace): input given through the command line.
+            If the legacy format is used it consists of the input filename,
+            otherwise the direct parsing of the output files from other
+            software packages is requested using the arguments given in the
+            command line.
+
+    Returns:
+        qm_inputs (dict): "geometry": geometry in Angstrom (numpy.darray,
+                shape=(n_atoms, 4)).
+            "energies": electronic states energies in a.u. (numpy.darray,
+                shape=n_el_states).
+            "dip_matrix": electric dipole moment matrix in a.u. (numpy.darray,
+                shape=(n_el_states, n_el_states, 3)). INCOMPLETE: values
+                only for the (0,i), (i,0) and the (el_state, el_state)
+                elements.
+            "charges": RESP charges for the el_state electronic state
+                (numpy.darray, shape=(n_el_states, n_atoms)).
+        mm_traj (mda.Universe): MM simulation trajectory.
+    ''' 
+    try:
+        qm_inputs, mm_traj = legacy_input(cmdline.legacy_input)
+    except:
+        if cmdline.qm_source.lower() == 'gaussian':
+            qm_inputs = get_tot_input_gauss(cmdline.qm_path, cmdline.roots)
+        if cmdline.mm_source.lower() == 'gromacs':
+            mm_traj = mda.Universe(cmdline.topology_path, cmdline.trajectory_path)
+    return qm_inputs, mm_traj
 
 if __name__ == '__main__':
     # get_input_gauss('../../../Photoswitch/Norbornadiene/QC_td5.log',9, 5,
     #                get_charges=True)
-    pmm_inputs = get_tot_input_gauss('../../../Photoswitch/Norbornadiene/QC_td{}.log',
+    qm_inputs = get_tot_input_gauss('../../../Photoswitch/Norbornadiene/QC_td{}.log',
                                      9, get_charges=True)
-    # for key in pmm_inputs:
-    #    print(key, '\n', pmm_inputs[key])
-    for row in pmm_inputs['geometry']:
+    # for key in qm_inputs:
+    #    print(key, '\n', qm_inputs[key])
+    for row in qm_inputs['geometry']:
         print(row)
