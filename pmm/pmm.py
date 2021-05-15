@@ -8,6 +8,7 @@ import MDAnalysis as mda
 from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
 import numpy as np
+from scipy import linalg
 import pmm.conversions as conv
 from pmm.conversions import Bohr2Ang
 
@@ -110,7 +111,7 @@ def rotate_dip_matrix(dip_matrix: np.ndarray,
     # rot_matrix is transposed to obtain the inverse. This way dip_matrix is
     # rotated into the Gromacs reference system.
     rot_dip_matrix = np.einsum('ij,klj->kli', rot_matrix.T, dip_matrix)
-    return rot_dip_matrix
+    return rot_dip_matrix, rot_matrix
 
 
 def calc_el_field_pot(solv_coor: np.ndarray, charges: np.ndarray,
@@ -207,6 +208,7 @@ def main():
     start = timer()
     # gather the electronic properties of the QC and load the MM trajectory
     qm_inputs, mm_traj = get_pmm_inputs(cmdline)
+    # print(qm_inputs['dip_matrix'])
     # geometry units: they are assumed to be Gaussian defaults (Angstrom).
     qc_ref = convert2Universe(qm_inputs['geometry'])
     # cut only the portion of interest of the QC.
@@ -225,16 +227,17 @@ def main():
         el_field, potential = calc_el_field_pot(solv_traj.atoms.positions,
                                                 solv_traj.atoms.charges,
                                                 qc_traj.atoms.center_of_mass())
-        rot_dip_matrix = rotate_dip_matrix(qm_inputs['dip_matrix'], qc_traj,
+        rot_dip_matrix, rot_matrix = rotate_dip_matrix(qm_inputs['dip_matrix'], qc_traj,
                                            qc_ref)
         pmm_matrix = calc_pmm_matrix(qm_inputs['energies'], rot_dip_matrix,
                                      el_field, potential,
                                      qc_qtot=cmdline.qc_charge)
         # print(pmm_matrix)
-        # print(- 1 * np.einsum('i,jki->jk', el_field, rot_dip_matrix))
-        eigval, eigvec = np.linalg.eig(pmm_matrix)
+        # print('rot matrix', rot_matrix)
+        eigval, eigvec = linalg.eigh(pmm_matrix)
         eigvals.append(eigval)
         eigvecs.append(eigvec)
+        # print('eigenvec', eigvec)
     np.savetxt('eigvals.txt', np.array(eigvals))
     end = timer()
     print(end - start)
