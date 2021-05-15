@@ -1,7 +1,8 @@
 '''Functions needed for MD-PMM calculations'''
 
-from pmm.inputs import get_pmm_input, get_tot_input_gauss
+from pmm.inputs import get_pmm_inputs, get_tot_input_gauss
 import sys
+from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
 import MDAnalysis as mda
 from MDAnalysis.analysis import align
@@ -170,18 +171,27 @@ def calc_pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
 
 
 def main():
-    '''CLI program to perform MD-PMM calculations.
+    '''Program with CLI to perform MD-PMM calculations.
     TODO: #3 add documentation.
     '''
     parser = ArgumentParser(prog='pmm',
                             description='Perform MD-PMM calculation.')
+    # Get the QC QM properties from formatted text files.
+    parser.add_argument('-g', '--ref-geom', action='store', type=str)
+    parser.add_argument('-dm', '--dip-matrix', action='store', type=str)
+    parser.add_argument('-e', '--energies', action='store', type=str)
+    parser.add_argument('-ch', '--charges', action='store', type=str,
+                        default=False)
+
+    # Parsing directly from other sofware packages output.
     parser.add_argument('-qm', '--qm-path', action='store', type=str)
     parser.add_argument('-r', '--roots', action='store', type=int)
+
     parser.add_argument('-traj', '--trajectory-path', action='store',
                         type=str)
     parser.add_argument('-top', '--topology-path', action='store', type=str)
-    parser.add_argument('-ch', '--charges', action='store_true',
-                        default=False, dest='charges')
+    # parser.add_argument('-ch', '--charges', action='store_true',
+    #                    default=False, dest='charges')
     parser.add_argument('-q', '--qc-charge', action='store', default=0,
                         type=int)
     parser.add_argument('-nm', '--mm-indexes', action='store', type=str,
@@ -194,8 +204,9 @@ def main():
                         default='gromacs')
     cmdline = parser.parse_args()
 
+    start = timer()
     # gather the electronic properties of the QC and load the MM trajectory
-    qm_inputs, mm_traj = get_pmm_input(cmdline)
+    qm_inputs, mm_traj = get_pmm_inputs(cmdline)
     # geometry units: they are assumed to be Gaussian defaults (Angstrom).
     qc_ref = convert2Universe(qm_inputs['geometry'])
     # cut only the portion of interest of the QC.
@@ -225,6 +236,8 @@ def main():
         eigvals.append(eigval)
         eigvecs.append(eigvec)
     np.savetxt('eigvals.txt', np.array(eigvals))
+    end = timer()
+    print(end - start)
     # print(eigvecs)
     # print(solv_traj.atoms.positions.shape)
     # np.savetxt('eigvecs.txt', np.array(eigvecs))
