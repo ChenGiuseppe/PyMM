@@ -5,7 +5,7 @@ import pmm.conversions as conv
 
 
 def get_raw_geom(geom_fn: str) -> np.ndarray:
-    '''Read the geometry directly from a formatted geometry text file
+    '''Read the geometry directly from a text file
     (for each X atom: "X x y z\n").
     
     Parameters:
@@ -55,7 +55,7 @@ def get_raw_geom(geom_fn: str) -> np.ndarray:
 
 
 def get_raw_matrix(matrix_fn: str) -> np.ndarray:
-    '''Read a (N, N, 3) matrix directly from a formatted text file
+    '''Read a (N, N, 3) matrix directly from a text file
     (for each matrix element i j: "i j x y z\n").
 
     Parameters:
@@ -108,7 +108,7 @@ def get_raw_matrix(matrix_fn: str) -> np.ndarray:
 
 
 def get_raw_energies(energies_fn: str) -> np.ndarray:
-    '''Read the electronic state energies from a formatted text file
+    '''Read the electronic state energies from a text file
     (for each ith electronic state: "Ei\n").
 
     Parameters:
@@ -132,7 +132,7 @@ def get_raw_energies(energies_fn: str) -> np.ndarray:
      
 
 def get_raw_charges(charges_fn: str) -> np.ndarray:
-    '''Read the RESP charges from a formatted text file
+    '''Read the RESP charges from a text file
     (a line for each electronic state, containing the charges for each atom).
 
     Parameters:
