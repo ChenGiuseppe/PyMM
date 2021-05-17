@@ -129,8 +129,8 @@ def calc_el_field_pot(solv_coor: np.ndarray, solv_charges: np.ndarray,
             charges of the solvent.
         qc_traj (mda.Universe): Universe object of the QC.
         q_tot (int): QC total charge.
-        qc_charges (np.ndarray): array providing
-            the atomic charge distribution of the QC.
+        qc_charges (dict): arrays providing the atomic charge distributions
+            of the QC.
 
     Returns:
         el_field (np.ndarray): electric field expressed in its xyz components.
@@ -150,12 +150,13 @@ def calc_el_field_pot(solv_coor: np.ndarray, solv_charges: np.ndarray,
                  (distances ** 3)).T).sum(axis=0)
     if qc_ch_switch:
         potential = np.zeros(qc_charges.shape[0])
-        for i, resp_charge in enumerate(qc_charges):
+        for i, resp_charges in enumerate(qc_charges):
             for j, qc_atom in enumerate(qc_traj.atoms.positions):
                 qc_xyz_distances = (qc_atom - solv_coor) / Bohr2Ang
                 qc_distances = np.sqrt(np.einsum('ij,ij->i', qc_xyz_distances,
                                                  qc_xyz_distances))
-                potential[i] += (resp_charge[j] / qc_distances).sum()
+                potential[i] += resp_charges[j] *\
+                    (solv_charges / qc_distances).sum()
     else:
         potential = q_tot * (solv_charges / distances).sum()
     return el_field, potential
@@ -236,16 +237,18 @@ def main():
     start = timer()
     # determine if the QC total charge is to be used of if the charge
     # distributions are provided.
-    qc_ch_switch = isinstance(cmdline.charges, np.ndarray)
+    qc_ch_switch = isinstance(cmdline.charges, str)
+    # print(qc_ch_switch)
     # gather the electronic properties of the QC and load the MM trajectory
     qm_inputs, mm_traj = get_pmm_inputs(cmdline)
     # print(qm_inputs['geometry'])
     # geometry units: converts to MDAnalysis defaults (Angstrom).
     if cmdline.geom_units.lower() == 'bohr':
-        qm_inputs['geometry'][:,1:] *= Bohr2Ang
+        qm_inputs['geometry'][:, 1:] *= Bohr2Ang
     elif cmdline.geom_units.lower() == 'nm':
-        qm_inputs['geometry'][:,1:] *= 10
+        qm_inputs['geometry'][:, 1:] *= 10
     # print(qm_inputs['geometry'])
+    # print(qm_inputs)
     qc_ref = convert2Universe(qm_inputs['geometry'])
     # cut only the portion of interest of the QC.
     if cmdline.qm_indexes:
@@ -258,6 +261,7 @@ def main():
     # Divide the coordinates in the frame between QC and solvent.
     # NOTE: the indexes are inclusive of the extremes.
     qc_traj, solv_traj = split_qc_solv(mm_traj, cmdline.mm_indexes)
+    # print(mm_traj.atoms.charges)
     for frame in mm_traj.trajectory:
         # print(solv_traj.atoms.positions)
         el_field, potential = calc_el_field_pot(solv_traj.atoms.positions,
@@ -265,12 +269,13 @@ def main():
                                                 qc_traj,
                                                 q_tot=cmdline.qc_charge,
                                                 qc_ch_switch=qc_ch_switch,
-                                                qc_charges=cmdline.charges)
+                                                qc_charges=qm_inputs['charges']
+                                                )
         rot_dip_matrix, rot_matrix = rotate_dip_matrix(qm_inputs['dip_matrix'],
                                                        qc_traj, qc_ref)
         pmm_matrix = calc_pmm_matrix(qm_inputs['energies'], rot_dip_matrix,
                                      el_field, potential)
-        # print(pmm_matrix)
+        # print('potential', potential, '\nel field', *el_field)
         # print('rot matrix', rot_matrix)
         eigval, eigvec = linalg.eigh(pmm_matrix)
         eigvals.append(eigval)

@@ -165,10 +165,7 @@ def get_raw_inputs(geom_fn: str, dip_mat_fn: str,
     qm_inputs['geometry'] = get_raw_geom(geom_fn)
     qm_inputs['dip_matrix'] = get_raw_matrix(dip_mat_fn)
     qm_inputs['energies'] = get_raw_energies(energies_fn)
-    if charges_fn:
-        charges = get_raw_charges(charges_fn)
-        for i in range(charges.shape[0]):
-            qm_inputs[f'charges_{i}'] = charges[i, :]
+    qm_inputs['charges'] = get_raw_charges(charges_fn)
     return qm_inputs
 
 
