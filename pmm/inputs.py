@@ -7,9 +7,9 @@ import pmm.conversions as conv
 def get_raw_geom(geom_fn: str) -> np.ndarray:
     '''Read the geometry directly from a text file
     (for each X atom: "X x y z\n").
-    
+
     Parameters:
-        geom_fn (str): geometry file name.
+        geom_fn (str): geometry filename.
 
     Returns:
         geom_tmp (np.ndarray): geometry as (n_atoms, 4) numpy array.
@@ -28,27 +28,27 @@ def get_raw_geom(geom_fn: str) -> np.ndarray:
             elif content == []:
                 continue
             elif not len(content) == 4:
-                raise ValueError("There's an error in the geometry file " +\
-                                 f'at line {i}: there are ' +\
-                                 f'{len(content)} elements.\n' +\
+                raise ValueError("There's an error in the geometry file " +
+                                 f'at line {i}: there are ' +
+                                 f'{len(content)} elements.\n' +
                                  f'{line}')
             try:
                 geom.append([float(j) for j in content])
                 continue
-            except:
+            except ValueError:
                 pass
             try:
                 # Try to convert the first element of the list (identifying
                 # the element) to its corresponding atomic mass (float).
                 # It takes only the first character, expecting something like:
                 # Examples: 'H', 'H1', 'HA', etc. and not '1H', 'XH', etc..
-                geom.append([conv.symbol2mass[content[0][0]]] +\
-                    [float(j) for j in content[1:]])
-            except:
-                raise ValueError('Expects the fist element of each line ' +\
-                                 'to begin with the atomic mass (float) ' +\
-                                 'or a string that begins with the letter ' +\
-                                 'corresponding to its symbol.')
+                geom.append([conv.symbol2mass[content[0][0]]] +
+                            [float(j) for j in content[1:]])
+            except ValueError:
+                print('Expects the fist element of each line',
+                      'to begin with the atomic mass (float)',
+                      'or a string that begins with the letter',
+                      'corresponding to its symbol.')
     geom_tmp = np.zeros_like(geom)
     geom_tmp[:] = geom
     return geom_tmp
@@ -59,7 +59,7 @@ def get_raw_matrix(matrix_fn: str) -> np.ndarray:
     (for each matrix element i j: "i j x y z\n").
 
     Parameters:
-        matrix_fn (str): matrix file name.
+        matrix_fn (str): matrix filename.
 
     Returns:
         matrix (np.ndarray): matrix as a numpy array.
@@ -80,9 +80,9 @@ def get_raw_matrix(matrix_fn: str) -> np.ndarray:
             elif content == []:
                 continue
             elif not (len(content) == 3 or len(content) == 5):
-                raise ValueError("There's an error in the matrix file " +\
-                                 f'at line {i}: there are ' +\
-                                 f'{len(content)} elements.\n' +\
+                raise ValueError("There's an error in the matrix file " +
+                                 f'at line {i}: there are ' +
+                                 f'{len(content)} elements.\n' +
                                  f'{line}')
             if len(content) == 3:
                 matrix_x.append(float(content[0]))
@@ -112,7 +112,7 @@ def get_raw_energies(energies_fn: str) -> np.ndarray:
     (for each ith electronic state: "Ei\n").
 
     Parameters:
-        energies_fn (str): energies file name.
+        energies_fn (str): energies filename.
 
     Returns:
         energies_tmp (np.ndarray): energies as a numpy array.
@@ -124,19 +124,20 @@ def get_raw_energies(energies_fn: str) -> np.ndarray:
                 continue
             try:
                 energies.append(float(line.strip()))
-            except:
-                raise ValueError('ValueError in the energies file.')
+            except ValueError:
+                print('There are values that are not float',
+                      'in the energies file.')
     energies_tmp = np.zeros_like(energies)
     energies_tmp[:] = energies
     return energies_tmp
-     
+
 
 def get_raw_charges(charges_fn: str) -> np.ndarray:
     '''Read the RESP charges from a text file
     (a line for each electronic state, containing the charges for each atom).
 
     Parameters:
-        charges_fn (str): charges file name.
+        charges_fn (str): charges filename.
 
     Returns:
         charges_tmp (np.ndarray): charges as a numpy matrix file
@@ -150,9 +151,9 @@ def get_raw_charges(charges_fn: str) -> np.ndarray:
                 continue
             try:
                 charges.append([float(i) for i in content])
-            except:
-                raise ValueError('There are not float values in the ', +\
-                                 'charges file.')
+            except ValueError:
+                print('There are values that are not float in the',
+                      'charges file.')
     charges_tmp = np.zeros_like(charges)
     charges_tmp[:, :] = charges
     return charges_tmp
@@ -167,7 +168,7 @@ def get_raw_inputs(geom_fn: str, dip_mat_fn: str,
     if charges_fn:
         charges = get_raw_charges(charges_fn)
         for i in range(charges.shape[0]):
-            qm_inputs[f'charges_{i}'] = charges[i,:]
+            qm_inputs[f'charges_{i}'] = charges[i, :]
     return qm_inputs
 
 
@@ -176,7 +177,7 @@ def legacy_input(filename: str, cmdline) -> dict:
     format:
     1.  geometry filename
     2.  dipole matrix filename
-    3.  roots 
+    3.  roots
     4.  solvent indexes filename
     5.  QC indexes filename
     6.  topology with atom charges filename
@@ -205,7 +206,7 @@ def legacy_input(filename: str, cmdline) -> dict:
         dip_matrix_fn = input_file[1].strip()
         cmdline.roots = int(input_file[2].strip)
         qc_ndx_fn = input_file[4].strip()
-        #top_fn = input_file[5].strip()
+        # top_fn = input_file[5].strip()
         energies_fn = input_file[7].strip()
         traj_fn = input_file[8].strip()
         cmdline.qc_charge = input_file[17].strip()
@@ -235,8 +236,9 @@ def legacy_input(filename: str, cmdline) -> dict:
     # QC charges
     with open(charges_fn, 'r') as charges_file:
         for state in range(cmdline.roots):
-            qm_inputs[f'charges_{state}'] = np.array([float(i) for
-                i in next(charges_file).split()])
+            qm_inputs[f'charges_{state}'] = np.array([float(i) for i in
+                                                     next(charges_file).split()
+                                                      ])
     # MD system charges
     mm_traj = mda.Universe(tpr_fn, traj_fn)
     return qm_inputs, mm_traj
@@ -311,7 +313,7 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
                 content = next(gout).split()
                 while '---' not in content[0]:
                     geom_no_symm.append([conv.Z2mass[content[1]]] +
-                                [float(coor) for coor in content[3:6]])
+                                        [float(coor) for coor in content[3:6]])
                     content = next(gout).split()
             elif 'SCF Done:  E(' in line and get_energies:
                 energies[0] = float(line.split()[4])
@@ -403,29 +405,29 @@ def get_tot_input_gauss(filename_scheme: str, n_el_states: int,
     for state in range(n_el_states):
         if state == 0:
             qm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
-                                             n_el_states, state,
-                                             get_energies=False,
-                                             get_trans_dip=False,
-                                             get_charges=get_charges)
+                                            n_el_states, state,
+                                            get_energies=False,
+                                            get_trans_dip=False,
+                                            get_charges=get_charges)
             qm_inputs['geometry'] = qm_inputs_tmp['geometry']
             qm_inputs['dip_matrix'] = qm_inputs_tmp['dip_matrix']
             if get_charges:
                 qm_inputs[f'charges_{state}'] = qm_inputs_tmp['charges']
         elif state == 1:
             qm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
-                                             n_el_states, state,
-                                             get_geom=False,
-                                             get_charges=get_charges)
+                                            n_el_states, state,
+                                            get_geom=False,
+                                            get_charges=get_charges)
             qm_inputs['energies'] = qm_inputs_tmp['energies']
             qm_inputs['dip_matrix'] += qm_inputs_tmp['dip_matrix']
             if get_charges:
                 qm_inputs[f'charges_{state}'] = qm_inputs_tmp['charges']
         else:
             qm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
-                                             n_el_states, state,
-                                             get_geom=False,
-                                             get_energies=False,
-                                             get_charges=get_charges)
+                                            n_el_states, state,
+                                            get_geom=False,
+                                            get_energies=False,
+                                            get_charges=get_charges)
             qm_inputs['dip_matrix'][state, state, :] =\
                 qm_inputs_tmp['dip_matrix'][state, state, :]
             if get_charges:
@@ -459,7 +461,8 @@ def get_pmm_inputs(cmdline) -> tuple[dict, mda.Universe]:
     qm_inputs = get_raw_inputs(cmdline.ref_geom, cmdline.dip_matrix,
                                cmdline.energies, cmdline.charges)
     if '.tpr' in cmdline.topology_path or '.xtc' in cmdline.trajectory_path:
-            mm_traj = mda.Universe(cmdline.topology_path, cmdline.trajectory_path)
+            mm_traj = mda.Universe(cmdline.topology_path,
+                                   cmdline.trajectory_path)
     return qm_inputs, mm_traj
 
 
@@ -486,22 +489,13 @@ def get_pmm_inputs_old(cmdline) -> tuple[dict, mda.Universe]:
             "charges": RESP charges for the el_state electronic state
                 (numpy.darray, shape=(n_el_states, n_atoms)).
         mm_traj (mda.Universe): MM simulation trajectory.
-    ''' 
+    '''
     try:
         qm_inputs, mm_traj = legacy_input(cmdline.legacy_input, cmdline)
-    except:
+    except ValueError:
         if cmdline.qm_source.lower() == 'gaussian':
             qm_inputs = get_tot_input_gauss(cmdline.qm_path, cmdline.roots)
         if cmdline.mm_source.lower() == 'gromacs':
-            mm_traj = mda.Universe(cmdline.topology_path, cmdline.trajectory_path)
+            mm_traj = mda.Universe(cmdline.topology_path,
+                                   cmdline.trajectory_path)
     return qm_inputs, mm_traj
-
-if __name__ == '__main__':
-    # get_input_gauss('../../../Photoswitch/Norbornadiene/QC_td5.log',9, 5,
-    #                get_charges=True)
-    qm_inputs = get_tot_input_gauss('../../../Photoswitch/Norbornadiene/QC_td{}.log',
-                                     9, get_charges=True)
-    # for key in qm_inputs:
-    #    print(key, '\n', qm_inputs[key])
-    for row in qm_inputs['geometry']:
-        print(row)
