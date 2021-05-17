@@ -115,21 +115,19 @@ def rotate_dip_matrix(dip_matrix: np.ndarray,
 
 
 def calc_el_field_pot(solv_coor: np.ndarray, solv_charges: np.ndarray,
-                      ref_origin: np.ndarray, q_tot: int, qc_ch_switch=False,
-                      qc_charges=False,
-                      qc_coor=False) -> tuple[np.ndarray, float]:
+                      qc_traj: mda.Universe, q_tot: int, qc_ch_switch=False,
+                      qc_charges=False) -> tuple[np.ndarray, float]:
     '''Calculate the electric field on the center of mass and the energy
     contribution given by the interaction between the QC charge and the
     electric potential produced by the solvent (the perturbing field).
 
     Parameters:
-        solv_coor (np.ndarray): (n_atoms, 3) array containing the xyz
-            coordinates of the solvent. Units Angstrom nm that the function
+        solv_coor (np.ndarray): (n_solv_atoms, 3) array containing the xyz
+            coordinates of the solvent. Units Angstrom that the function
             converts in Bohr.
         solv_charges (np.ndarray): (n_atoms) array containing the force field
             charges of the solvent.
-        ref_origin (np.ndarray): point on which the electric field is applied
-            (in the PMM: center of mass the Quantum Center). Units Angstrom.
+        qc_traj (mda.Universe): Universe object of the QC.
         q_tot (int): QC total charge.
         qc_charges (np.ndarray): array providing
             the atomic charge distribution of the QC.
@@ -145,18 +143,20 @@ def calc_el_field_pot(solv_coor: np.ndarray, solv_charges: np.ndarray,
             considering the charges on each atom of the QC. Expressed in a.u..
     '''
     # converts the coordinates from the trajectory in a.u.
+    ref_origin = qc_traj.atoms.center_of_mass()
     xyz_distances = (ref_origin - solv_coor) / Bohr2Ang
     distances = np.sqrt(np.einsum('ij,ij->i', xyz_distances, xyz_distances))
-    el_field = (((solv_charges * xyz_distances.T) / (distances ** 3)).T).sum(axis=0)
+    el_field = (((solv_charges * xyz_distances.T) /
+                 (distances ** 3)).T).sum(axis=0)
     if qc_ch_switch:
         potential = np.zeros(qc_charges.shape[0])
         for i, resp_charge in enumerate(qc_charges):
-            for j, qc_atom in enumerate(qc_coor):
+            for j, qc_atom in enumerate(qc_traj.atoms.positions):
                 qc_xyz_distances = (qc_atom - solv_coor) / Bohr2Ang
                 qc_distances = np.sqrt(np.einsum('ij,ij->i', qc_xyz_distances,
-                                          qc_xyz_distances))
+                                                 qc_xyz_distances))
                 potential[i] += (resp_charge[j] / qc_distances).sum()
-    else:        
+    else:
         potential = q_tot * (solv_charges / distances).sum()
     return el_field, potential
 
@@ -200,31 +200,37 @@ def main():
     parser = ArgumentParser(prog='pmm',
                             description='Perform MD-PMM calculation.')
     # Get the QC QM properties from text files.
-    parser.add_argument('-g', '--ref-geom', action='store', type=str)
-    parser.add_argument('-dm', '--dip-matrix', action='store', type=str)
-    parser.add_argument('-e', '--energies', action='store', type=str)
+    parser.add_argument('-g', '--ref-geom', action='store', type=str,
+                        help='QC reference (QM) geometry filename')
+    parser.add_argument('-gu', '--geom-units', choices=['angstrom', 'bohr',
+                        'nm'], help='specify units used in the reference ' +
+                        'geometry')
+    parser.add_argument('-dm', '--dip-matrix', action='store', type=str,
+                        help='QC unperturbed electric dipole moment matrix ' +
+                        'filename')
+    parser.add_argument('-e', '--energies', action='store', type=str,
+                        help='QC unperturbed electronic states energies ' +
+                        'filename')
     parser.add_argument('-ch', '--charges', action='store', type=str,
-                        default=False)
-
-    # Parsing directly from other sofware packages output.
-    parser.add_argument('-qm', '--qm-path', action='store', type=str)
-    parser.add_argument('-r', '--roots', action='store', type=int)
-
+                        default=False, help='file with the QC atomic ' +
+                        'charges for each unperturbed electronic state ' +
+                        '(default=False)')
     parser.add_argument('-traj', '--trajectory-path', action='store',
-                        type=str)
-    parser.add_argument('-top', '--topology-path', action='store', type=str)
-    # parser.add_argument('-ch', '--charges', action='store_true',
-    #                    default=False, dest='charges')
+                        type=str, help='XTC file of the MD simulation ' +
+                        'trajectory')
+    parser.add_argument('-top', '--topology-path', action='store', type=str,
+                        help='TPR file of the MD simulation')
     parser.add_argument('-q', '--qc-charge', action='store', default=0,
-                        type=int)
+                        type=int, help='total QC charge (default=0)')
     parser.add_argument('-nm', '--mm-indexes', action='store', type=str,
-                        help='indexes of the QC in the MM trajectory.')
+                        help='indexes of the QC in the MM trajectory')
     parser.add_argument('-nq', '--qm-indexes', action='store', type=str,
-                        default=False)
-    parser.add_argument('-sq', '--qm-source', action='store', type=str,
-                        default='gaussian')
-    parser.add_argument('-sm', '--mm-source', action='store', type=str,
-                        default='gromacs')
+                        default=False, help='indexes of the portion of the ' +
+                        'reference (QM) geometry to be considered in the ' +
+                        'MD-PMM calculation')
+    parser.add_argument('-o', '--output', action='store', type=str,
+                        default='eigenval.txt', help='perturbed QC energies ' +
+                        '(default: eigenval.txt)')
     cmdline = parser.parse_args()
 
     start = timer()
@@ -233,8 +239,13 @@ def main():
     qc_ch_switch = isinstance(cmdline.charges, np.ndarray)
     # gather the electronic properties of the QC and load the MM trajectory
     qm_inputs, mm_traj = get_pmm_inputs(cmdline)
-    # print(qm_inputs['dip_matrix'])
-    # geometry units: they are assumed to be Gaussian defaults (Angstrom).
+    # print(qm_inputs['geometry'])
+    # geometry units: converts to MDAnalysis defaults (Angstrom).
+    if cmdline.geom_units.lower() == 'bohr':
+        qm_inputs['geometry'][:,1:] *= Bohr2Ang
+    elif cmdline.geom_units.lower() == 'nm':
+        qm_inputs['geometry'][:,1:] *= 10
+    # print(qm_inputs['geometry'])
     qc_ref = convert2Universe(qm_inputs['geometry'])
     # cut only the portion of interest of the QC.
     if cmdline.qm_indexes:
@@ -251,29 +262,26 @@ def main():
         # print(solv_traj.atoms.positions)
         el_field, potential = calc_el_field_pot(solv_traj.atoms.positions,
                                                 solv_traj.atoms.charges,
-                                                qc_traj.atoms.center_of_mass(),
+                                                qc_traj,
                                                 q_tot=cmdline.qc_charge,
                                                 qc_ch_switch=qc_ch_switch,
-                                                qc_charges=cmdline.charges,
-                                                qc_coor=\
-                                                    qc_traj.atoms.positions)
-        rot_dip_matrix, rot_matrix = rotate_dip_matrix(qm_inputs['dip_matrix'], qc_traj,
-                                           qc_ref)
+                                                qc_charges=cmdline.charges)
+        rot_dip_matrix, rot_matrix = rotate_dip_matrix(qm_inputs['dip_matrix'],
+                                                       qc_traj, qc_ref)
         pmm_matrix = calc_pmm_matrix(qm_inputs['energies'], rot_dip_matrix,
-                                     el_field, potential,
-                                     )
+                                     el_field, potential)
         # print(pmm_matrix)
         # print('rot matrix', rot_matrix)
         eigval, eigvec = linalg.eigh(pmm_matrix)
         eigvals.append(eigval)
         eigvecs.append(eigvec)
         # print('eigenvec', eigvec)
-    np.savetxt('eigvals.txt', np.array(eigvals))
+    np.savetxt(cmdline.output, np.array(eigvals),
+               header='Perturbed QC energies:')
     end = timer()
-    print(end - start)
+    print('The calculation took: ', end - start)
     # print(eigvecs)
     # print(solv_traj.atoms.positions.shape)
-    # np.savetxt('eigvecs.txt', np.array(eigvecs))
     return 0
 
 
