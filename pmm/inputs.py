@@ -165,7 +165,10 @@ def get_raw_inputs(geom_fn: str, dip_mat_fn: str,
     qm_inputs['geometry'] = get_raw_geom(geom_fn)
     qm_inputs['dip_matrix'] = get_raw_matrix(dip_mat_fn)
     qm_inputs['energies'] = get_raw_energies(energies_fn)
-    qm_inputs['charges'] = get_raw_charges(charges_fn)
+    if charges_fn:
+        qm_inputs['charges'] = get_raw_charges(charges_fn)
+    else:
+        qm_inputs['charges'] = None
     return qm_inputs
 
 
