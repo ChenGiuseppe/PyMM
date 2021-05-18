@@ -8,6 +8,7 @@ import MDAnalysis as mda
 from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
 import numpy as np
+from numba import njit
 from scipy import linalg
 import pmm.conversions as conv
 from pmm.conversions import Bohr2Ang
@@ -115,7 +116,8 @@ def rotate_dip_matrix(dip_matrix: np.ndarray,
 
 
 def calc_el_field_pot(solv_coor: np.ndarray, solv_charges: np.ndarray,
-                      qc_traj: mda.Universe, q_tot: int, qc_ch_switch=False,
+                      qc_coor: np.ndarray, cdm: np.ndarray,
+                      q_tot: int, qc_ch_switch=False,
                       qc_charges=False) -> tuple[np.ndarray, float]:
     '''Calculate the electric field on the center of mass and the energy
     contribution given by the interaction between the QC charge and the
@@ -125,9 +127,11 @@ def calc_el_field_pot(solv_coor: np.ndarray, solv_charges: np.ndarray,
         solv_coor (np.ndarray): (n_solv_atoms, 3) array containing the xyz
             coordinates of the solvent. Units Angstrom that the function
             converts in Bohr.
-        solv_charges (np.ndarray): (n_atoms) array containing the force field
-            charges of the solvent.
-        qc_traj (mda.Universe): Universe object of the QC.
+        solv_charges (np.ndarray): (n_solv_atoms) array containing the force
+            field charges of the solvent.
+        qc_coor (np.ndarray): (n_qc_atoms, 3) array containing the xyz
+            coordinates of the QC in the MD trajectory frame.
+        cdm (np.ndarray): QC center of mass in the MD trajectory frame.
         q_tot (int): QC total charge.
         qc_charges (dict): arrays providing the atomic charge distributions
             of the QC.
@@ -143,20 +147,23 @@ def calc_el_field_pot(solv_coor: np.ndarray, solv_charges: np.ndarray,
             considering the charges on each atom of the QC. Expressed in a.u..
     '''
     # converts the coordinates from the trajectory in a.u.
-    ref_origin = qc_traj.atoms.center_of_mass()
-    xyz_distances = (ref_origin - solv_coor) / Bohr2Ang
-    distances = np.sqrt(np.einsum('ij,ij->i', xyz_distances, xyz_distances))
+    xyz_distances = (cdm - solv_coor) / Bohr2Ang
+    # distances = np.sqrt(np.einsum('ij,ij->i', xyz_distances, xyz_distances))
+    distances = np.sqrt((xyz_distances**2).sum(axis=1))
     el_field = (((solv_charges * xyz_distances.T) /
                  (distances ** 3)).T).sum(axis=0)
     if qc_ch_switch:
         potential = np.zeros(qc_charges.shape[0])
+        qc_distances = np.zeros((qc_coor.shape[0], solv_coor.shape[0]))
+        for i, qc_atom in enumerate(qc_coor):
+            qc_xyz_distances = (qc_atom - solv_coor) / Bohr2Ang
+            # qc_distances = np.sqrt(np.einsum('ij,ij->i', qc_xyz_distances,
+            #                                 qc_xyz_distances))
+            qc_distances[i, :] = np.sqrt((qc_xyz_distances**2).sum(axis=1))
         for i, resp_charges in enumerate(qc_charges):
-            for j, qc_atom in enumerate(qc_traj.atoms.positions):
-                qc_xyz_distances = (qc_atom - solv_coor) / Bohr2Ang
-                qc_distances = np.sqrt(np.einsum('ij,ij->i', qc_xyz_distances,
-                                                 qc_xyz_distances))
-                potential[i] += resp_charges[j] *\
-                    (solv_charges / qc_distances).sum()
+            for qc_atom in range(qc_coor.shape[0]):
+                potential[i] += resp_charges[qc_atom] *\
+                    (solv_charges / qc_distances[qc_atom, :]).sum()
     else:
         potential = q_tot * (solv_charges / distances).sum()
     return el_field, potential
@@ -164,7 +171,7 @@ def calc_el_field_pot(solv_coor: np.ndarray, solv_charges: np.ndarray,
 
 def calc_pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
                     el_field: np.ndarray,
-                    potential: float) -> np.ndarray:
+                    potential: float, qc_ch_swith: bool) -> np.ndarray:
     '''Construct PMM matrix.
 
     Parameters:
@@ -182,15 +189,22 @@ def calc_pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
             produced by the solvent (perturbing field). If can be obtained by
             considering the QC a point-charge in its center of mass or by
             considering the charges on each atom of the QC. Expressed in a.u..
+        qc_ch_switch (bool): choose whether to use the QC-based expansion or
+            the atom-based expansion.
 
     Returns:
         pmm_matrix (np.ndarray): Hamiltonian matrix of the perturbed system
             as calculated (... cite article).
         '''
     # TODO #1 Add reference to PMM article.
-    # diagonal elements
-    pmm_matrix = np.diag(energies + potential) \
-        - 1 * np.einsum('i,jki->jk', el_field, rot_dip_matrix)
+    # print('E0 + mu', np.diag(energies) - 1 * np.einsum('i,jki->jk',
+    #       el_field, rot_dip_matrix))
+    if qc_ch_swith:
+        pmm_matrix = - 1 * np.einsum('i,jki->jk', el_field, rot_dip_matrix)
+        np.fill_diagonal(pmm_matrix, energies + potential)
+    else:
+        pmm_matrix = np.diag(energies + potential) \
+            - 1 * np.einsum('i,jki->jk', el_field, rot_dip_matrix)
     return pmm_matrix
 
 
@@ -205,7 +219,7 @@ def main():
                         help='QC reference (QM) geometry filename')
     parser.add_argument('-gu', '--geom-units', choices=['angstrom', 'bohr',
                         'nm'], help='specify units used in the reference ' +
-                        'geometry')
+                        'geometry', default='angstrom')
     parser.add_argument('-dm', '--dip-matrix', action='store', type=str,
                         help='QC unperturbed electric dipole moment matrix ' +
                         'filename')
@@ -241,7 +255,7 @@ def main():
     # print(qc_ch_switch)
     # gather the electronic properties of the QC and load the MM trajectory
     qm_inputs, mm_traj = get_pmm_inputs(cmdline)
-    # print(qm_inputs['geometry'])
+    # print(qm_inputs['energies'])
     # geometry units: converts to MDAnalysis defaults (Angstrom).
     if cmdline.geom_units.lower() == 'bohr':
         qm_inputs['geometry'][:, 1:] *= Bohr2Ang
@@ -262,11 +276,15 @@ def main():
     # NOTE: the indexes are inclusive of the extremes.
     qc_traj, solv_traj = split_qc_solv(mm_traj, cmdline.mm_indexes)
     # print(mm_traj.atoms.charges)
+    # print(qc_traj.atoms.center_of_mass().dtype, solv_traj.atoms.positions.dtype)
     for frame in mm_traj.trajectory:
         # print(solv_traj.atoms.positions)
+        # cdm_qc_traj = qc_traj.atoms.center_of_mass().astype('float32')
+        # print(cdm_qc_traj.dtype, solv_traj.atoms.positions.dtype)
         el_field, potential = calc_el_field_pot(solv_traj.atoms.positions,
                                                 solv_traj.atoms.charges,
-                                                qc_traj,
+                                                qc_traj.atoms.positions,
+                                                qc_traj.atoms.center_of_mass(),
                                                 q_tot=cmdline.qc_charge,
                                                 qc_ch_switch=qc_ch_switch,
                                                 qc_charges=qm_inputs['charges']
@@ -274,9 +292,9 @@ def main():
         rot_dip_matrix, rot_matrix = rotate_dip_matrix(qm_inputs['dip_matrix'],
                                                        qc_traj, qc_ref)
         pmm_matrix = calc_pmm_matrix(qm_inputs['energies'], rot_dip_matrix,
-                                     el_field, potential)
-        # print('potential', potential, '\nel field', *el_field)
-        # print('rot matrix', rot_matrix)
+                                     el_field, potential, qc_ch_switch)
+        # print('potential', potential, '\nel field', el_field)
+        # print('H tot', pmm_matrix.diagonal())
         eigval, eigvec = linalg.eigh(pmm_matrix)
         eigvals.append(eigval)
         eigvecs.append(eigvec)
