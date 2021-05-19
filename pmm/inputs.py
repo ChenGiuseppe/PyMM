@@ -168,7 +168,7 @@ def get_raw_inputs(geom_fn: str, dip_mat_fn: str,
     if charges_fn:
         qm_inputs['charges'] = get_raw_charges(charges_fn)
     else:
-        qm_inputs['charges'] = np.array([None])
+        qm_inputs['charges'] = None
     return qm_inputs
 
 
