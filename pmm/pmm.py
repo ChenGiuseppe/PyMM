@@ -117,8 +117,8 @@ def rotate_dip_matrix(dip_matrix: np.ndarray,
 
 @njit
 def calc_el_field_pot_qc(solv_coor: np.ndarray, solv_charges: np.ndarray,
-                      qc_coor: np.ndarray, cdm: np.ndarray,
-                      q_tot: int) -> tuple[np.ndarray, float]:
+                         qc_coor: np.ndarray, cdm: np.ndarray,
+                         q_tot: int) -> tuple[np.ndarray, float]:
     '''Calculate the electric field on the center of mass and the energy
     contribution given by the interaction between the QC charge and the
     electric potential produced by the solvent (the perturbing field).
@@ -162,8 +162,8 @@ def calc_el_field_pot_qc(solv_coor: np.ndarray, solv_charges: np.ndarray,
 
 @njit(parallel=True)
 def calc_el_field_pot_atom(solv_coor: np.ndarray, solv_charges: np.ndarray,
-                      qc_coor: np.ndarray, cdm: np.ndarray,
-                      qc_charges: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+                           qc_coor: np.ndarray, cdm: np.ndarray,
+                           qc_charges: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         # converts the coordinates from the trajectory in a.u.
     xyz_distances = (cdm - solv_coor) / Bohr2Ang
     # distances = np.sqrt(np.einsum('ij,ij->i', xyz_distances, xyz_distances))
@@ -294,7 +294,8 @@ def main():
     # NOTE: the indexes are inclusive of the extremes.
     qc_traj, solv_traj = split_qc_solv(mm_traj, cmdline.mm_indexes)
     # print(mm_traj.atoms.charges)
-    # print(qc_traj.atoms.center_of_mass().dtype, solv_traj.atoms.positions.dtype)
+    # print(qc_traj.atoms.center_of_mass().dtype,
+    #       solv_traj.atoms.positions.dtype)
     for i, frame in enumerate(mm_traj.trajectory):
         # print(solv_traj.atoms.positions)
         # cdm_qc_traj = qc_traj.atoms.center_of_mass().astype('float32')
