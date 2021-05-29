@@ -121,7 +121,8 @@ def calc_el_field_pot_qc(solv_coor: np.ndarray, solv_charges: np.ndarray,
                          q_tot: int) -> tuple[np.ndarray, float]:
     '''Calculate the electric field on the center of mass and the energy
     contribution given by the interaction between the QC charge and the
-    electric potential produced by the solvent (the perturbing field).
+    electric potential produced by the solvent in the framework of the QC-based
+    expansion (the perturbing field).
 
     Parameters:
         solv_coor (np.ndarray): (n_solv_atoms, 3) array containing the xyz
@@ -133,10 +134,6 @@ def calc_el_field_pot_qc(solv_coor: np.ndarray, solv_charges: np.ndarray,
             coordinates of the QC in the MD trajectory frame.
         cdm (np.ndarray): QC center of mass in the MD trajectory frame.
         q_tot (int): QC total charge.
-        qc_charges (np.ndarray): arrays providing the atomic charge
-            distributions of the QC.
-        qc_ch_switch (bool): determine if the calculation is performed in the
-            QC-based expansion or the atom-based expansion framework.
 
     Returns:
         el_field (np.ndarray): electric field expressed in its xyz components.
@@ -145,8 +142,8 @@ def calc_el_field_pot_qc(solv_coor: np.ndarray, solv_charges: np.ndarray,
             elements of the perturbed Hamiltonian given by the interactions
             between the charge/s of the QC and the electric potential
             produced by the solvent (perturbing field). It is obtained by
-            considering the QC a point-charge in its center of mass or by
-            considering the charges on each atom of the QC. Expressed in a.u..
+            considering the QC a point-charge in its center of mass. Expressed
+            in a.u..
     '''
     # converts the coordinates from the trajectory in a.u.
     xyz_distances = (cdm - solv_coor) / Bohr2Ang
@@ -164,7 +161,33 @@ def calc_el_field_pot_qc(solv_coor: np.ndarray, solv_charges: np.ndarray,
 def calc_el_field_pot_atom(solv_coor: np.ndarray, solv_charges: np.ndarray,
                            qc_coor: np.ndarray, cdm: np.ndarray,
                            qc_charges: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        # converts the coordinates from the trajectory in a.u.
+    '''Calculate the electric field on the center of mass and the energy
+    contribution given by the interaction between the QC charge and the
+    electric potential produced by the solvent (the perturbing field) in the
+    framework of the atom-based expansion.
+
+    Parameters:
+        solv_coor (np.ndarray): (n_solv_atoms, 3) array containing the xyz
+            coordinates of the solvent. Units Angstrom that the function
+            converts in Bohr.
+        solv_charges (np.ndarray): (n_solv_atoms) array containing the force
+            field charges of the solvent.
+        qc_coor (np.ndarray): (n_qc_atoms, 3) array containing the xyz
+            coordinates of the QC in the MD trajectory frame.
+        cdm (np.ndarray): QC center of mass in the MD trajectory frame.
+        qc_charges (np.ndarray): arrays providing the atomic charge
+            distributions of the QC.
+
+    Returns:
+        el_field (np.ndarray): electric field expressed in its xyz components.
+            In a.u..
+        potential (float or np.ndarray): energy contributions to the matrix
+            elements of the perturbed Hamiltonian given by the interactions
+            between the charge/s of the QC and the electric potential
+            produced by the solvent (perturbing field). It is obtained by
+            considering the charges on each atom of the QC. Expressed in a.u..
+    '''
+    # converts the coordinates from the trajectory in a.u.
     xyz_distances = (cdm - solv_coor) / Bohr2Ang
     # distances = np.sqrt(np.einsum('ij,ij->i', xyz_distances, xyz_distances))
     distances = np.sqrt((xyz_distances**2).sum(axis=1))
@@ -177,10 +200,9 @@ def calc_el_field_pot_atom(solv_coor: np.ndarray, solv_charges: np.ndarray,
         # qc_distances[i, :] = np.sqrt(np.einsum('ij,ij->i', qc_xyz_distances,
         #                                 qc_xyz_distances))
         qc_distances[i, :] = np.sqrt((qc_xyz_distances**2).sum(axis=1))
-    for i in prange(qc_charges.shape[0]):
-        for qc_atom in prange(qc_coor.shape[0]):
-            potential[i] += qc_charges[i, qc_atom] *\
-                (solv_charges / qc_distances[qc_atom, :]).sum()
+        for j in prange(qc_charges.shape[0]):
+            potential[j] += qc_charges[j, i] *\
+                (solv_charges / qc_distances[i, :]).sum()
     return el_field, potential
 
 
@@ -326,6 +348,7 @@ def main():
         # print('eigenvec', eigvec)
     np.savetxt(cmdline.output, eigvals,
                header='Perturbed QC energies:')
+    np.save('eigenvecs', eigvecs)
     end = timer()
     print('The calculation took: ', end - start)
     # print(eigvecs)
