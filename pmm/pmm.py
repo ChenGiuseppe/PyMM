@@ -1,6 +1,6 @@
 '''Functions needed for MD-PMM calculations'''
 
-from pmm.inputs import get_pmm_inputs, get_tot_input_gauss
+from pmm.inputs import read_pmm_inputs, read_tot_input_gauss
 import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
@@ -118,7 +118,7 @@ def rotate_dip_matrix(dip_matrix: np.ndarray,
 @njit
 def calc_el_field_pot_qc(solv_coor: np.ndarray, solv_charges: np.ndarray,
                          qc_coor: np.ndarray, cdm: np.ndarray,
-                         q_tot: int) -> tuple[np.ndarray, float]:
+                         q_tot: int):
     '''Calculate the electric field on the center of mass and the energy
     contribution given by the interaction between the QC charge and the
     electric potential produced by the solvent in the framework of the QC-based
@@ -160,7 +160,7 @@ def calc_el_field_pot_qc(solv_coor: np.ndarray, solv_charges: np.ndarray,
 @njit(parallel=True)
 def calc_el_field_pot_atom(solv_coor: np.ndarray, solv_charges: np.ndarray,
                            qc_coor: np.ndarray, cdm: np.ndarray,
-                           qc_charges: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+                           qc_charges: np.ndarray):
     '''Calculate the electric field on the center of mass and the energy
     contribution given by the interaction between the QC charge and the
     electric potential produced by the solvent (the perturbing field) in the
@@ -291,7 +291,7 @@ def main():
     qc_ch_switch = isinstance(cmdline.charges, str)
     # print(qc_ch_switch)
     # gather the electronic properties of the QC and load the MM trajectory
-    qm_inputs, mm_traj = get_pmm_inputs(cmdline)
+    qm_inputs, mm_traj = read_pmm_inputs(cmdline)
     # print(qm_inputs['energies'])
     # geometry units: converts to MDAnalysis defaults (Angstrom).
     if cmdline.geom_units.lower() == 'bohr':

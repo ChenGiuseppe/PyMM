@@ -4,7 +4,7 @@ import numpy as np
 import pmm.conversions as conv
 
 
-def get_raw_geom(geom_fn: str) -> np.ndarray:
+def read_raw_geom(geom_fn: str) -> np.ndarray:
     '''Read the geometry directly from a text file
     (for each X atom: "X x y z\n").
 
@@ -54,7 +54,7 @@ def get_raw_geom(geom_fn: str) -> np.ndarray:
     return geom_tmp
 
 
-def get_raw_matrix(matrix_fn: str) -> np.ndarray:
+def read_raw_matrix(matrix_fn: str) -> np.ndarray:
     '''Read a (N, N, 3) matrix directly from a text file
     (for each matrix element i j: "i j x y z\n").
 
@@ -107,7 +107,7 @@ def get_raw_matrix(matrix_fn: str) -> np.ndarray:
     return matrix
 
 
-def get_raw_energies(energies_fn: str) -> np.ndarray:
+def read_raw_energies(energies_fn: str) -> np.ndarray:
     '''Read the electronic state energies from a text file
     (for each ith electronic state: "Ei\n").
 
@@ -132,7 +132,7 @@ def get_raw_energies(energies_fn: str) -> np.ndarray:
     return energies_tmp
 
 
-def get_raw_charges(charges_fn: str) -> np.ndarray:
+def read_raw_charges(charges_fn: str) -> np.ndarray:
     '''Read the RESP charges from a text file
     (a line for each electronic state, containing the charges for each atom).
 
@@ -159,14 +159,14 @@ def get_raw_charges(charges_fn: str) -> np.ndarray:
     return charges_tmp
 
 
-def get_raw_inputs(geom_fn: str, dip_mat_fn: str,
+def read_raw_inputs(geom_fn: str, dip_mat_fn: str,
                    energies_fn: str, charges_fn=False) -> None:
     qm_inputs = {}
-    qm_inputs['geometry'] = get_raw_geom(geom_fn)
-    qm_inputs['dip_matrix'] = get_raw_matrix(dip_mat_fn)
-    qm_inputs['energies'] = get_raw_energies(energies_fn)
+    qm_inputs['geometry'] = read_raw_geom(geom_fn)
+    qm_inputs['dip_matrix'] = read_raw_matrix(dip_mat_fn)
+    qm_inputs['energies'] = read_raw_energies(energies_fn)
     if charges_fn:
-        qm_inputs['charges'] = get_raw_charges(charges_fn)
+        qm_inputs['charges'] = read_raw_charges(charges_fn)
     else:
         qm_inputs['charges'] = None
     return qm_inputs
@@ -244,9 +244,9 @@ def legacy_input(filename: str, cmdline) -> dict:
     return qm_inputs, mm_traj
 
 
-def get_input_gauss(filename: str, n_el_states: int, el_state: int,
-                    get_geom=True, get_energies=True, get_trans_dip=True,
-                    get_diag_dip=True, get_charges=False) -> dict:
+def read_input_gauss(filename: str, n_el_states: int, el_state: int,
+                    read_geom=True, read_energies=True, read_trans_dip=True,
+                    read_diag_dip=True, read_charges=False) -> dict:
     '''Extract the geometry, the electronic states energies, the elements
     of the electric dipole moment matrix and/or the RESP charges from the
     Gaussian (specifically 16, support for other versions is to be verified)
@@ -266,16 +266,16 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
             electronic states considered (including the ground state).
         el_state (int): A integer indicating the electronic state considered
             in the calculation (starting from 0 for the ground state).
-        get_geom (bool): A boolean that specifies if extracting the geometry
+        read_geom (bool): A boolean that specifies if extracting the geometry
             is wanted.
-        get_energies (bool): A boolean that specifies if extracting the
+        read_energies (bool): A boolean that specifies if extracting the
             electronic states energies is wanted.
-        get_trans_dip (bool): A boolean that specifies if extracting the
+        read_trans_dip (bool): A boolean that specifies if extracting the
             not diagonal elements of the electric dipole moment matrix
             is wanted.
-        get_diag_dip (bool): A boolean that specifies if extracting the
+        read_diag_dip (bool): A boolean that specifies if extracting the
             diagonal elements of the electric dipole moment matrix is wanted.
-        get_charges (bool): A boolean that specifies if extracting the RESP
+        read_charges (bool): A boolean that specifies if extracting the RESP
             charges is desired.
 
     Returns:
@@ -299,7 +299,7 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
         dip_matrix = np.zeros((n_el_states, n_el_states, 3))
         charges = []
         for line in gout:
-            if 'Standard orientation:' in line and get_geom:
+            if 'Standard orientation:' in line and read_geom:
                 for i in range(4):
                     next(gout)
                 content = next(gout).split()
@@ -307,7 +307,7 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
                     geom.append([conv.Z2mass[content[1]]] +
                                 [float(coor) for coor in content[3:6]])
                     content = next(gout).split()
-            elif 'Input orientation:' in line and get_geom:
+            elif 'Input orientation:' in line and read_geom:
                 for i in range(4):
                     next(gout)
                 content = next(gout).split()
@@ -315,9 +315,9 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
                     geom_no_symm.append([conv.Z2mass[content[1]]] +
                                         [float(coor) for coor in content[3:6]])
                     content = next(gout).split()
-            elif 'SCF Done:  E(' in line and get_energies:
+            elif 'SCF Done:  E(' in line and read_energies:
                 energies[0] = float(line.split()[4])
-            elif 'Excited State' in line and get_energies:
+            elif 'Excited State' in line and read_energies:
                 # check if this condition is sufficient to cover all the
                 # possible cases we take the excitation energy expressed
                 # in eV, which is then converted to a.u.
@@ -328,7 +328,7 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
             # dipole moments (Au):' is too long. In order to abide to PEP8
             # guidelines a shorter string is used.
             elif 'transition electric dipole moments (Au):'\
-                    in line and get_trans_dip:
+                    in line and read_trans_dip:
                 next(gout)
                 content = next(gout).split()
                 while content[0].isnumeric():
@@ -339,41 +339,41 @@ def get_input_gauss(filename: str, n_el_states: int, el_state: int,
                     content = next(gout).split()
             # 'Dipole moment (field-independent basis, Debye):' is too long.
             # In order to abide to PEP8 a shorter string is used.
-            elif 'Dipole moment (field-independent' in line and get_diag_dip:
+            elif 'Dipole moment (field-independent' in line and read_diag_dip:
                 # The values in the Gaussian output are reported in Debye:
                 # a conversion from Debye to a.u. is performed.
                 dip_matrix[el_state, el_state, :] =\
                     [float(dip_mom)*conv.Debye2au
                      for dip_mom in next(gout).split()[1:6:2]]
-            elif 'ESP charges:' in line and get_charges:
+            elif 'ESP charges:' in line and read_charges:
                 next(gout)
                 content = next(gout).split()
                 while content[0].isnumeric():
                     charges.append(float(content[2]))
                     content = next(gout).split()
-        if get_geom and geom:
+        if read_geom and geom:
             geom_tmp = np.zeros_like(geom)
             geom_tmp[:, :] = geom
             qm_inputs['geometry'] = geom_tmp
-        elif get_geom and geom_no_symm:
+        elif read_geom and geom_no_symm:
             geom_tmp = np.zeros_like(geom_no_symm)
             geom_tmp[:, :] = geom_no_symm
             qm_inputs['geometry'] = geom_tmp
-        if get_energies:
+        if read_energies:
             energies_tmp = np.zeros_like(energies)
             energies_tmp[:] = energies
             qm_inputs['energies'] = energies_tmp
-        if get_diag_dip or get_trans_dip:
+        if read_diag_dip or read_trans_dip:
             qm_inputs['dip_matrix'] = dip_matrix
-        if get_charges:
+        if read_charges:
             charges_tmp = np.zeros_like(charges)
             charges_tmp[:] = charges
             qm_inputs['charges'] = np.array(charges_tmp)
         return qm_inputs
 
 
-def get_tot_input_gauss(filename_scheme: str, n_el_states: int,
-                        get_charges=False) -> dict:
+def read_tot_input_gauss(filename_scheme: str, n_el_states: int,
+                        read_charges=False) -> dict:
     '''Obtain the electronic properties need for basic MD-PMM calculations
     from calculations performed with Gaussian(16, compatibility with other
     versions still to be verified).
@@ -385,7 +385,7 @@ def get_tot_input_gauss(filename_scheme: str, n_el_states: int,
             states.
         n_el_states (int): A integer referring to the total number of
             electronic states considered (including the ground state).
-        get_charges (bool): A boolean that specifies if extracting the RESP
+        read_charges (bool): A boolean that specifies if extracting the RESP
             charges is desired
 
     Returns:
@@ -404,38 +404,38 @@ def get_tot_input_gauss(filename_scheme: str, n_el_states: int,
     qm_inputs = {}
     for state in range(n_el_states):
         if state == 0:
-            qm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
+            qm_inputs_tmp = read_input_gauss(filename_scheme.format(state),
                                             n_el_states, state,
-                                            get_energies=False,
-                                            get_trans_dip=False,
-                                            get_charges=get_charges)
+                                            read_energies=False,
+                                            read_trans_dip=False,
+                                            read_charges=read_charges)
             qm_inputs['geometry'] = qm_inputs_tmp['geometry']
             qm_inputs['dip_matrix'] = qm_inputs_tmp['dip_matrix']
-            if get_charges:
+            if read_charges:
                 qm_inputs[f'charges_{state}'] = qm_inputs_tmp['charges']
         elif state == 1:
-            qm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
+            qm_inputs_tmp = read_input_gauss(filename_scheme.format(state),
                                             n_el_states, state,
-                                            get_geom=False,
-                                            get_charges=get_charges)
+                                            read_geom=False,
+                                            read_charges=read_charges)
             qm_inputs['energies'] = qm_inputs_tmp['energies']
             qm_inputs['dip_matrix'] += qm_inputs_tmp['dip_matrix']
-            if get_charges:
+            if read_charges:
                 qm_inputs[f'charges_{state}'] = qm_inputs_tmp['charges']
         else:
-            qm_inputs_tmp = get_input_gauss(filename_scheme.format(state),
+            qm_inputs_tmp = read_input_gauss(filename_scheme.format(state),
                                             n_el_states, state,
-                                            get_geom=False,
-                                            get_energies=False,
-                                            get_charges=get_charges)
+                                            read_geom=False,
+                                            read_energies=False,
+                                            read_charges=read_charges)
             qm_inputs['dip_matrix'][state, state, :] =\
                 qm_inputs_tmp['dip_matrix'][state, state, :]
-            if get_charges:
+            if read_charges:
                 qm_inputs[f'charges_{state}'] = qm_inputs_tmp['charges']
     return qm_inputs
 
 
-def get_pmm_inputs(cmdline) -> tuple[dict, mda.Universe]:
+def read_pmm_inputs(cmdline):
     '''Obtain the pmm inputs according to the different sources.
 
     Parameters:
@@ -458,7 +458,7 @@ def get_pmm_inputs(cmdline) -> tuple[dict, mda.Universe]:
                 (numpy.darray, shape=(n_el_states, n_atoms)).
         mm_traj (mda.Universe): MM simulation trajectory.
     '''
-    qm_inputs = get_raw_inputs(cmdline.ref_geom, cmdline.dip_matrix,
+    qm_inputs = read_raw_inputs(cmdline.ref_geom, cmdline.dip_matrix,
                                cmdline.energies, cmdline.charges)
     if '.tpr' in cmdline.topology_path or '.xtc' in cmdline.trajectory_path:
             mm_traj = mda.Universe(cmdline.topology_path,
@@ -466,8 +466,8 @@ def get_pmm_inputs(cmdline) -> tuple[dict, mda.Universe]:
     return qm_inputs, mm_traj
 
 
-def get_pmm_inputs_old(cmdline) -> tuple[dict, mda.Universe]:
-    '''NOTE: old version of get_pmm_input. To be reworked in the future.
+def read_pmm_inputs_old(cmdline):
+    '''NOTE: old version of read_pmm_input. To be reworked in the future.
     Obtain the pmm inputs according to the different sources.
 
     Parameters:
@@ -494,8 +494,14 @@ def get_pmm_inputs_old(cmdline) -> tuple[dict, mda.Universe]:
         qm_inputs, mm_traj = legacy_input(cmdline.legacy_input, cmdline)
     except ValueError:
         if cmdline.qm_source.lower() == 'gaussian':
-            qm_inputs = get_tot_input_gauss(cmdline.qm_path, cmdline.roots)
+            qm_inputs = read_tot_input_gauss(cmdline.qm_path, cmdline.roots)
         if cmdline.mm_source.lower() == 'gromacs':
             mm_traj = mda.Universe(cmdline.topology_path,
                                    cmdline.trajectory_path)
     return qm_inputs, mm_traj
+
+if __name__ == '__main__':
+    qm_inputs = read_input_gauss('/mnt/d/Dottorato/polylys/new_NMeAlaAm/NMeAlaAm_new_cam_froz.log', 16, 1)
+    print(qm_inputs['energies'][0])
+    for i in qm_inputs['energies']:
+        print(i - qm_inputs['energies'][0])
