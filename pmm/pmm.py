@@ -1,6 +1,7 @@
 '''Functions needed for MD-PMM calculations'''
 
 from pmm.inputs import read_pmm_inputs, read_tot_input_gauss
+from pmm.spectra import calc_pert_matrix, calc_uv
 import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
@@ -283,6 +284,7 @@ def main():
     parser.add_argument('-o', '--output', action='store', type=str,
                         default='eigenval.txt', help='perturbed QC energies ' +
                         '(default: eigenval.txt)')
+    parser.add_argument('-uv', action='store_true', help='calculate UV spectra')
     cmdline = parser.parse_args()
 
     start = timer()
@@ -353,6 +355,9 @@ def main():
     print('The calculation took: ', end - start)
     # print(eigvecs)
     # print(solv_traj.atoms.positions.shape)
+    if cmdline.uv:
+        pert_matrix = calc_pert_matrix(qm_inputs['dip_matrix'], eigvecs)
+        calc_uv(eigvals, pert_matrix)
     return 0
 
 
