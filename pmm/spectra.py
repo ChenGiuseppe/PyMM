@@ -33,16 +33,19 @@ def calc_uv(energies: np.ndarray, pert_matrix: np.ndarray, sigma=0.0003) -> np.n
     Returns:
     '''
     fig, ax = plt.subplots(1, 1, figsize=(8,5))
-    exc_ens = (energies[:, 1:] - np.expand_dims(energies[:, 0], axis=1)) / (2 * np.pi)
+    exc_ens = (energies[:, 1:] - np.expand_dims(energies[:, 0], axis=1)) / (2
+              * np.pi)
     mu_squareds = (pert_matrix[:, 0, 1:, :]**2).sum(axis=2)
     n_frames = energies.shape[0]
     # histos = []
-    extra_range = 0.1
+    extra_range = 0.03
+    n_bins = int(round((exc_ens.max() + extra_range - (exc_ens.min() 
+             - extra_range)) / (0.0016 / (2 * np.pi * 10))))
     bin_edges = np.histogram_bin_edges(exc_ens, range=(exc_ens.min() 
                                                        - extra_range,
                                                        exc_ens.max()
                                                        + extra_range),
-                                       bins='sqrt')
+                                       bins=n_bins)
     bin_step = bin_edges[1] - bin_edges[0]
     bin_centers = bin_edges[:-1] + bin_step / 2
     spectra = []
@@ -60,9 +63,14 @@ def calc_uv(energies: np.ndarray, pert_matrix: np.ndarray, sigma=0.0003) -> np.n
         spectra.append(spectrum_tmp * np.sqrt(2*np.pi) / (137 * sigma))
     spectra = np.array(spectra)
     tot_spectrum = np.sum(spectra, axis=0)
-    ax.plot(137 * 0.0529 / bin_centers, tot_spectrum * 16863 / 2.3)
-    for transition in spectra:
-        ax.plot(137 * 0.0529 / bin_centers, transition * 16863 / 2.3)
+    lambdas = 137 * 0.0529 / bin_centers
+    tot_spectrum = np.vstack((lambdas, tot_spectrum)).transpose((1,0))
+    spectra = np.vstack((lambdas, spectra)).transpose((1,0))
+    np.savetxt('tot_UV_spectrum.txt', tot_spectrum)
+    np.savetxt('UV_transitions.txt', spectra)
+    ax.plot(lambdas, tot_spectrum[:, 1] * 16863 / 2.3)
+    for i in range(1, spectra.shape[1]):
+        ax.plot(lambdas, spectra[:, i] * 16863 / 2.3)
     plt.show()
 
 if __name__ == '__main__':
