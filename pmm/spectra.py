@@ -21,7 +21,8 @@ def calc_pert_matrix(unpert_matrixs: np.ndarray,
     pert_matrixs = np.einsum('ijk,ijmn->ikmn', eigvecs, pert_matrixs)
     return pert_matrixs
 
-def calc_uv(energies: np.ndarray, pert_matrix: np.ndarray, sigma=0.0003) -> np.ndarray:
+def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
+             output_fn: str, sigma=0.0003) -> np.ndarray:
     '''Calculate UV spectrum from the PMM trajectory.
 
     Parameters:
@@ -66,8 +67,8 @@ def calc_uv(energies: np.ndarray, pert_matrix: np.ndarray, sigma=0.0003) -> np.n
     lambdas = 137 * 0.0529 / bin_centers
     tot_spectrum = np.vstack((lambdas, tot_spectrum)).transpose((1,0))
     spectra = np.vstack((lambdas, spectra)).transpose((1,0))
-    np.savetxt('tot_UV_spectrum.txt', tot_spectrum)
-    np.savetxt('UV_transitions.txt', spectra)
+    np.savetxt(f'tot_{output_fn}.txt', tot_spectrum)
+    np.savetxt(f'{output_fn}_transitions.txt', spectra)
     ax.plot(lambdas, tot_spectrum[:, 1] * 16863 / 2.3)
     for i in range(1, spectra.shape[1]):
         ax.plot(lambdas, spectra[:, i] * 16863 / 2.3)
@@ -129,6 +130,6 @@ if __name__ == '__main__':
     energies = np.loadtxt('/mnt/d/Dottorato/Programs/prova/thioindigo/eigenvals_last.txt')
     eigvecs = np.load('/mnt/d/Dottorato/Programs/prova/thioindigo/eigenvecs.npy')
     pert_matrix = calc_pert_matrix(matrix, eigvecs)
-    calc_uv(energies, pert_matrix)
+    calc_abs(energies, pert_matrix)
     #for i in range(100):
     #    print(i, energies[i,1]-energies[i,0], (pert_matrix[i,0,1,:]**2).sum())

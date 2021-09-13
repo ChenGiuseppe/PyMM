@@ -1,7 +1,6 @@
 '''Functions needed for MD-PMM calculations'''
 
 from pmm.inputs import read_pmm_inputs
-from pmm.spectra import calc_pert_matrix, calc_uv
 import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
@@ -246,48 +245,10 @@ def calc_pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
     return pmm_matrix
 
 
-def main():
-    '''Program with CLI to perform MD-PMM calculations.
+def pmm(cmdline):
+    '''Program to perform MD-PMM calculations.
     TODO: #3 add documentation.
     '''
-    parser = ArgumentParser(prog='pmm',
-                            description='Perform MD-PMM calculation.')
-    # Get the QC QM properties from text files.
-    parser.add_argument('-g', '--ref-geom', action='store', type=str,
-                        help='QC reference (QM) geometry filename')
-    parser.add_argument('-gu', '--geom-units', choices=['angstrom', 'bohr',
-                        'nm'], help='specify units used in the reference '
-                        'geometry', default='angstrom')
-    parser.add_argument('-dm', '--dip-matrix', action='store', type=str,
-                        help='QC unperturbed electric dipole moment matrix '
-                        'filename')
-    parser.add_argument('-e', '--energies', action='store', type=str,
-                        help='QC unperturbed electronic states energies '
-                        'filename')
-    parser.add_argument('-ch', '--charges', action='store', type=str,
-                        default=False, help='file with the QC atomic '
-                        'charges for each unperturbed electronic state '
-                        '(default=False)')
-    parser.add_argument('-traj', '--trajectory-path', action='store',
-                        type=str, help='XTC file of the MD simulation '
-                        'trajectory')
-    parser.add_argument('-top', '--topology-path', action='store', type=str,
-                        help='TPR file of the MD simulation')
-    parser.add_argument('-q', '--qc-charge', action='store', default=0,
-                        type=int, help='total QC charge (default=0)')
-    parser.add_argument('-nm', '--mm-indexes', action='store', type=str,
-                        help='indexes of the QC in the MM trajectory')
-    parser.add_argument('-nq', '--qm-indexes', action='store', type=str,
-                        default=False, help='indexes of the portion of the '
-                        'reference (QM) geometry to be considered in the '
-                        'MD-PMM calculation')
-    parser.add_argument('-o', '--output', action='store', type=str,
-                        default='eigenval.txt', help='perturbed QC energies '
-                        '(default: eigenval.txt)')
-    parser.add_argument('-uv', action='store_true', help='calculate UV spectra')
-    cmdline = parser.parse_args()
-
-    start = timer()
     # determine if the QC total charge is to be used or if the charge
     # distributions are provided.
     qc_ch_switch = isinstance(cmdline.charges, str)
@@ -350,16 +311,11 @@ def main():
         # print('eigenvec', eigvec)
     np.savetxt(cmdline.output, eigvals,
                header='Perturbed QC energies:')
-    np.save('eigenvecs', eigvecs)
-    end = timer()
-    print('The calculation took: ', end - start)
+    np.save(cmdline.output_vecs, eigvecs)
     # print(eigvecs)
     # print(solv_traj.atoms.positions.shape)
-    if cmdline.uv:
-        pert_matrix = calc_pert_matrix(qc.dip_matrix, eigvecs)
-        calc_uv(eigvals, pert_matrix)
     return 0
 
 
 if __name__ == '__main__':
-    main()
+    pass
