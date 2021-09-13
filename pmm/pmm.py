@@ -1,6 +1,6 @@
 '''Functions needed for MD-PMM calculations'''
 
-from pmm.inputs import read_pmm_inputs, read_tot_input_gauss
+from pmm.inputs import read_pmm_inputs
 from pmm.spectra import calc_pert_matrix, calc_uv
 import sys
 from timeit import default_timer as timer
@@ -256,20 +256,20 @@ def main():
     parser.add_argument('-g', '--ref-geom', action='store', type=str,
                         help='QC reference (QM) geometry filename')
     parser.add_argument('-gu', '--geom-units', choices=['angstrom', 'bohr',
-                        'nm'], help='specify units used in the reference ' +
+                        'nm'], help='specify units used in the reference '
                         'geometry', default='angstrom')
     parser.add_argument('-dm', '--dip-matrix', action='store', type=str,
-                        help='QC unperturbed electric dipole moment matrix ' +
+                        help='QC unperturbed electric dipole moment matrix '
                         'filename')
     parser.add_argument('-e', '--energies', action='store', type=str,
-                        help='QC unperturbed electronic states energies ' +
+                        help='QC unperturbed electronic states energies '
                         'filename')
     parser.add_argument('-ch', '--charges', action='store', type=str,
-                        default=False, help='file with the QC atomic ' +
-                        'charges for each unperturbed electronic state ' +
+                        default=False, help='file with the QC atomic '
+                        'charges for each unperturbed electronic state '
                         '(default=False)')
     parser.add_argument('-traj', '--trajectory-path', action='store',
-                        type=str, help='XTC file of the MD simulation ' +
+                        type=str, help='XTC file of the MD simulation '
                         'trajectory')
     parser.add_argument('-top', '--topology-path', action='store', type=str,
                         help='TPR file of the MD simulation')
@@ -278,31 +278,31 @@ def main():
     parser.add_argument('-nm', '--mm-indexes', action='store', type=str,
                         help='indexes of the QC in the MM trajectory')
     parser.add_argument('-nq', '--qm-indexes', action='store', type=str,
-                        default=False, help='indexes of the portion of the ' +
-                        'reference (QM) geometry to be considered in the ' +
+                        default=False, help='indexes of the portion of the '
+                        'reference (QM) geometry to be considered in the '
                         'MD-PMM calculation')
     parser.add_argument('-o', '--output', action='store', type=str,
-                        default='eigenval.txt', help='perturbed QC energies ' +
+                        default='eigenval.txt', help='perturbed QC energies '
                         '(default: eigenval.txt)')
     parser.add_argument('-uv', action='store_true', help='calculate UV spectra')
     cmdline = parser.parse_args()
 
     start = timer()
-    # determine if the QC total charge is to be used of if the charge
+    # determine if the QC total charge is to be used or if the charge
     # distributions are provided.
     qc_ch_switch = isinstance(cmdline.charges, str)
     # print(qc_ch_switch)
     # gather the electronic properties of the QC and load the MM trajectory
-    qm_inputs, mm_traj = read_pmm_inputs(cmdline)
+    qc, mm_traj = read_pmm_inputs(cmdline)
     # print(qm_inputs['energies'])
     # geometry units: converts to MDAnalysis defaults (Angstrom).
     if cmdline.geom_units.lower() == 'bohr':
-        qm_inputs['geometry'][:, 1:] *= Bohr2Ang
+        qc.geom[:, 1:] *= Bohr2Ang
     elif cmdline.geom_units.lower() == 'nm':
-        qm_inputs['geometry'][:, 1:] *= 10
+        qc.geom[:, 1:] *= 10
     # print(qm_inputs['geometry'])
     # print(qm_inputs)
-    qc_ref = convert2Universe(qm_inputs['geometry'])
+    qc_ref = convert2Universe(qc.geom)
     # cut only the portion of interest of the QC.
     if cmdline.qm_indexes:
         qc_ref = cut_qc(qc_ref, cmdline.qm_indexes)
@@ -310,10 +310,10 @@ def main():
     qc_ref.atoms.positions -= qc_ref.atoms.center_of_mass()
     # MD-PMM calculation.
     eigvals = np.zeros((mm_traj.trajectory.n_frames,
-                       qm_inputs['energies'].shape[0]))
+                       qc.energies.shape[0]))
     eigvecs = np.zeros((mm_traj.trajectory.n_frames,
-                        qm_inputs['energies'].shape[0],
-                        qm_inputs['energies'].shape[0]))
+                        qc.energies.shape[0],
+                        qc.energies.shape[0]))
     # Divide the coordinates in the frame between QC and solvent.
     # NOTE: the indexes are inclusive of the extremes.
     qc_traj, solv_traj = split_qc_solv(mm_traj, cmdline.mm_indexes)
@@ -329,16 +329,16 @@ def main():
                                                          solv_traj.atoms.charges,
                                                          qc_traj.atoms.positions,
                                                          qc_traj.atoms.center_of_mass(),
-                                                         qm_inputs['charges'])
+                                                         qc.charges)
         else:
             el_field, potential = calc_el_field_pot_qc(solv_traj.atoms.positions,
                                                        solv_traj.atoms.charges,
                                                        qc_traj.atoms.positions,
                                                        qc_traj.atoms.center_of_mass(),
                                                        q_tot=cmdline.qc_charge)
-        rot_dip_matrix, rot_matrix = rotate_dip_matrix(qm_inputs['dip_matrix'],
+        rot_dip_matrix, rot_matrix = rotate_dip_matrix(qc.dip_matrix,
                                                        qc_traj, qc_ref)
-        pmm_matrix = calc_pmm_matrix(qm_inputs['energies'], rot_dip_matrix,
+        pmm_matrix = calc_pmm_matrix(qc.energies, rot_dip_matrix,
                                      el_field, potential, qc_ch_switch)
         # print('potential', potential, '\nel field', el_field)
         # print('H tot', pmm_matrix.diagonal())
@@ -356,7 +356,7 @@ def main():
     # print(eigvecs)
     # print(solv_traj.atoms.positions.shape)
     if cmdline.uv:
-        pert_matrix = calc_pert_matrix(qm_inputs['dip_matrix'], eigvecs)
+        pert_matrix = calc_pert_matrix(qc.dip_matrix, eigvecs)
         calc_uv(eigvals, pert_matrix)
     return 0
 
