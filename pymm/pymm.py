@@ -107,7 +107,9 @@ def main():
     elif cmdline.command == 'calc_dA':
         dA = calc_dA(cmdline.T, cmdline.en_in_in, cmdline.en_fin_in,
                      cmdline.en_in_fin, cmdline.en_fin_fin)
-        np.loadtxt(cmdline.output, dA)
+        with open(cmdline.output, 'w') as file_out:
+            file_out.write('Free Energy\n')
+            file_out.write(f'{dA} J/mol')
     end = timer()
     print('The calculation took: ', end - start)
     return 0
