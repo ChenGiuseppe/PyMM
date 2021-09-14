@@ -70,8 +70,6 @@ def main():
     cmdline = parser.parse_args()
 
     start = timer()
-    # print(eigvecs)
-    # print(solv_traj.atoms.positions.shape)
     if cmdline.command == 'run_pmm':
         pmm(cmdline)
     elif cmdline.command == 'calc_abs':
