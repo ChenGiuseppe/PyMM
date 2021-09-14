@@ -66,7 +66,7 @@ or:
 PyMM <program> -h
 ```
 
-to receive info on how to use them.
+to obtain info on how to use them.
 
 ### run_pmm
 
@@ -75,3 +75,11 @@ The main feature of PyMM is to perform MD-PMM calculations (options in "[]" are 
 ```
 PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomic_charges] -traj traj.xtc -top traj.tpr -q [QC_charge] -nm 1:3 -o [eigenval.txt] -oc [eigvecs]
 ```
+
+* -g : QC geometry input file. Each line should be formatted as:
+ 
+``` 
+[atom symbol] [x] [y] [z] 
+```
+
+> The program also accept other types of formatting and will check and correct some errors.
