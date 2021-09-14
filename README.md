@@ -51,19 +51,19 @@ You can then proceed usign the PyMM program.
 If you need help use:
 
 ```
-PyMM -h
+pymm -h
 ```
 
 It will list the commands currently supported. To launch these programs type:
 
 ```
-PyMM <command>
+pymm <command>
 ```
 
 or:
 
 ```
-PyMM <program> -h
+pymm <program> -h
 ```
 
 to obtain info on how to use them.
