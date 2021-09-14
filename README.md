@@ -148,7 +148,7 @@ Calculate the free energy difference between two states (initial and final) each
 PyMM free_en -T 298 -eii file1 -efi file2 -eif file3 -eff file4
 ```
 
-> **NOTE**: The files are to be provided according to these scheme:
+> **NOTE**: The energy files are to be provided according to these scheme:
 >
 > | ensemble\state | initial |  final  | 
 > |----------------|---------|---------|
