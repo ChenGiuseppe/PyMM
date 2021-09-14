@@ -140,7 +140,7 @@ PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomi
 * -oc : filename of the output containing the eigenvectors (saved in the .npy format). By default it is "eigvecs" (i.e. <em>eigvecs.npy</em>).
 
 
-## calc_abs
+### calc_abs
 
 Program used to calculate the absorption spectrum of the QC. After running the MD-PMM calculation you can obtain the absorption spectrum using:
 
@@ -148,7 +148,7 @@ Program used to calculate the absorption spectrum of the QC. After running the M
 PyMM calc_abs -dm dipmat -el eigvals.txt -ev eigvecs.npy -sigma [0.0003] -ot [abs_spectrum]
 ```
 
-## free_en
+### free_en
 
 Calculate the free energy difference between two states (initial and final) each considered in the two ensembles (of the initial and final state). The Zwanzig formula was used.
 
