@@ -1,6 +1,7 @@
 from pymm.inputs import read_raw_matrix
 from pymm.pmm import pmm
 from pymm.spectra import calc_pert_matrix, calc_abs
+import pymm.free_en import calc_dA
 import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
@@ -63,10 +64,35 @@ def main():
     parser_abs.add_argument('-ec', '--eigvecs', action='store', type=str,
                             default='eigvecs.npy', help='Perturbed '
                             'eigenvectors trajectory (default: eigvecs.npy)')
+    parser_abs.add_argument('-sigma', action='store', type=float,
+                            default=0.0003, help='Sigma value of the gaussian '
+                            'broadening of the signal')
     parser_abs.add_argument('-ot', '--output', action='store', type=str,
                             default='abs_spectrum',
                             help='Calculated absorption spectra names'
                             '(default: abs_spectrum)')
+    # Calculate free energy
+    parser_dA = subparser.add_parser('calc_dA',
+                                     help='Calculate free energy')
+    parser_dA.add_argument('-T', '--temperature', action='store', type=float,
+                           default=298., help='Temperature of the system '
+                           'during the simulation')
+    parser_dA.add_argument('-eii', '--en_in_in', action='store', type=str,
+                           help='Filename of the MD-PMM energies trajectory '
+                           'for the initial state in the initial ensemble')
+    parser_dA.add_argument('-efi', '--en_fin_in', action='store', type=str,
+                           help='Filename of the MD-PMM energies trajectory '
+                           'for the final state in the initial ensemble')
+    parser_dA.add_argument('-eif', '--en_in_in', action='store', type=str,
+                           help='Filename of the MD-PMM energies trajectory '
+                           'for the initial state in the final ensemble')
+    parser_dA.add_argument('-eff', '--en_fin_in', action='store', type=str,
+                           help='Filename of the MD-PMM energies trajectory '
+                           'for the final state in the final ensemble')   
+    parser_dA.add_argument('-o', '--output', action='store', type=str,
+                            default='dA_mean.txt',
+                            help='Calculated free energy differences'
+                            '(default: dA_mean.txt)')                    
     cmdline = parser.parse_args()
 
     start = timer()
@@ -77,7 +103,11 @@ def main():
         eigvals = np.loadtxt(cmdline.eigvals)
         eigvecs = np.load(cmdline.eigvecs)
         pert_matrix = calc_pert_matrix(dip_matrix, eigvecs)
-        calc_abs(eigvals, pert_matrix, cmdline.output)
+        calc_abs(eigvals, pert_matrix, cmdline.output, cmdline.sigma)
+    elif cmdline.command == 'calc_dA':
+        dA = calc_dA(cmdline.T, cmdline.en_in_in, cmdline.en_fin_in,
+                     cmdline.en_in_fin, cmdline.en_fin_fin)
+        np.loadtxt(cmdline.output, dA)
     end = timer()
     print('The calculation took: ', end - start)
     return 0
