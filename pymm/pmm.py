@@ -1,6 +1,6 @@
 '''Functions needed for MD-PMM calculations'''
 
-from pymm.inputs import read_pmm_inputs
+from pymm.inputs import read_pmm_inputs, write_geom
 import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
@@ -32,7 +32,7 @@ def convert2Universe(geometry: np.ndarray) -> mda.Universe:
     univ_geom.add_TopologyAttr('mass', masses)
     # convert masses to atom type
     # print([atom[0] for atom in geometry])
-    atom_types = [conv.mass2symbol[atom[0]] for atom in geometry]
+    atom_types = [conv.mass2symbol[round(atom[0])] for atom in geometry]
     univ_geom.add_TopologyAttr('type', atom_types)
     # add xyz coordinates
     univ_geom.atoms.positions = geometry[:, 1:]
@@ -56,10 +56,13 @@ def split_qc_solv(traj: mda.Universe,
            (complementary to the QC).
 
     Example:
-        split_qc_solv(traj, "1:10 or 12")  # NOTE: it includes the extremes.
+        split_qc_solv(traj, "1:10 12")  # NOTE: it includes the extremes.
     '''
-    qc = traj.select_atoms(f'bynum {qc_indexes}')
-    solv = traj.select_atoms(f'not bynum {qc_indexes}')
+    new_qc_indexes = ' or bynum '.join(qc_indexes.split())
+    #print(new_qc_indexes)
+    qc = traj.select_atoms(f'bynum {new_qc_indexes}')
+    print(qc)
+    solv = traj.select_atoms(f'not bynum {new_qc_indexes}')
     return qc, solv
 
 
@@ -312,6 +315,7 @@ def pmm(cmdline):
     np.savetxt(cmdline.output, eigvals,
                header='Perturbed QC energies:')
     np.save(cmdline.output_vecs, eigvecs)
+    write_geom(qc.geom)
     # print(eigvecs)
     # print(solv_traj.atoms.positions.shape)
     return 0

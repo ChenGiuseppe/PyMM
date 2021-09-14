@@ -59,6 +59,15 @@ def read_raw_geom(geom_fn: str) -> np.ndarray:
     geom_tmp[:] = geom
     return geom_tmp
 
+def write_geom(geom: np.ndarray):
+    '''Write a .xyz geometry file readable by Avogadro (and maybe other
+    programs too'''
+    n_atoms = geom.shape[0]
+    with open('qc_geom.xyz', 'w') as geom_out:
+        geom_out.write(f'{n_atoms}\n\n')
+        for i in range(n_atoms):
+            geom_out.write('{} {} {} {}\n'.format(
+                           conv.mass2symbol[round(geom[i,0])], *geom[i,1:]))
 
 def read_raw_matrix(matrix_fn: str) -> np.ndarray:
     '''Read a (N, N, 3) matrix directly from a text file
