@@ -88,7 +88,10 @@ def main():
                            'for the initial state in the final ensemble')
     parser_dA.add_argument('-eff', '--en_fin_fin', action='store', type=str,
                            help='Filename of the MD-PMM energies trajectory '
-                           'for the final state in the final ensemble')   
+                           'for the final state in the final ensemble')
+    parser_dA.add_argument('-col', action='store', type=int, default=0,
+                           help='Column (or electronic state) to consider '
+                           'from the energies trajectory file') 
     parser_dA.add_argument('-o', '--output', action='store', type=str,
                             default='dA_mean.txt',
                             help='Calculated free energy differences'
@@ -105,7 +108,7 @@ def main():
         pert_matrix = calc_pert_matrix(dip_matrix, eigvecs)
         calc_abs(eigvals, pert_matrix, cmdline.output, cmdline.sigma)
     elif cmdline.command == 'free_en':
-        col = 1
+        col = 0
         en_in_in = np.loadtxt(cmdline.en_in_in)[:,col]
         en_fin_in = np.loadtxt(cmdline.en_fin_in)[:,col]
         en_in_fin = np.loadtxt(cmdline.en_in_fin)[:,col]
