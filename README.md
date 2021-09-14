@@ -70,16 +70,37 @@ to obtain info on how to use them.
 
 ### run_pmm
 
-The main feature of PyMM is to perform MD-PMM calculations (options in "[]" are optional):
+The main feature of PyMM is to perform MD-PMM calculations (arguments in "[]" are optional):
 
 ```
 PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomic_charges] -traj traj.xtc -top traj.tpr -q [QC_charge] -nm 1:3 -o [eigenval.txt] -oc [eigvecs]
 ```
 
-* -g : QC geometry input file. Each line should be formatted as:
+* **-g** : QC geometry input file. Each line should be formatted as:
  
-``` 
-[atom symbol] [x] [y] [z] 
+```
+<atom symbol> <x> <y> <z> 
 ```
 
-> The program also accept other types of formatting and will check and correct some errors.
+> NOTE: The program also accept other types of formatting and will check and correct some errors.
+
+* -gu : units used in the QC geometry input file.
+
+* **-dm** : electric dipole matrix file. Each line should be formatted as:
+
+```
+<state_n> <state_m> <x> <y> <z>
+```
+
+* **-e** : electronic energies file. Each line should be formatted as:
+
+```
+<state_n energy>
+```
+
+* -ch : file containing QC atomic charges for each electronic state. It should be formatted as follows:
+
+```
+<atom1 state1 charge> <atom2 state1 charge> ...
+<atom1 state2 charge> <atom2 state2 charge> ...
+```
