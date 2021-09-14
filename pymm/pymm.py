@@ -48,7 +48,7 @@ def main():
                         'MD-PMM calculation')
     parser_pmm.add_argument('-o', '--output', action='store', type=str,
                         default='eigvals.txt', help='perturbed QC energies '
-                        '(default: eigenval.txt)')
+                        '(default: eigvals.txt)')
     parser_pmm.add_argument('-oc', '--output_vecs', action='store', type=str,
                         default='eigvecs', help='perturbed eigenvectors '
                         '(default: eigvecs -> eigvecs.npy)')
@@ -66,13 +66,13 @@ def main():
                             'eigenvectors trajectory (default: eigvecs.npy)')
     parser_abs.add_argument('-sigma', action='store', type=float,
                             default=0.0003, help='Sigma value of the gaussian '
-                            'broadening of the signal')
+                            'broadening of the signal (expressed as frequency)')
     parser_abs.add_argument('-ot', '--output', action='store', type=str,
                             default='abs_spectrum',
                             help='Calculated absorption spectra names'
                             '(default: abs_spectrum)')
     # Calculate free energy
-    parser_dA = subparser.add_parser('calc_dA',
+    parser_dA = subparsers.add_parser('calc_dA',
                                      help='Calculate free energy')
     parser_dA.add_argument('-T', '--temperature', action='store', type=float,
                            default=298., help='Temperature of the system '
@@ -83,10 +83,10 @@ def main():
     parser_dA.add_argument('-efi', '--en_fin_in', action='store', type=str,
                            help='Filename of the MD-PMM energies trajectory '
                            'for the final state in the initial ensemble')
-    parser_dA.add_argument('-eif', '--en_in_in', action='store', type=str,
+    parser_dA.add_argument('-eif', '--en_in_fin', action='store', type=str,
                            help='Filename of the MD-PMM energies trajectory '
                            'for the initial state in the final ensemble')
-    parser_dA.add_argument('-eff', '--en_fin_in', action='store', type=str,
+    parser_dA.add_argument('-eff', '--en_fin_fin', action='store', type=str,
                            help='Filename of the MD-PMM energies trajectory '
                            'for the final state in the final ensemble')   
     parser_dA.add_argument('-o', '--output', action='store', type=str,
