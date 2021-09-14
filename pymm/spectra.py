@@ -22,7 +22,7 @@ def calc_pert_matrix(unpert_matrixs: np.ndarray,
     return pert_matrixs
 
 def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
-             output_fn: str, sigma=0.0003) -> np.ndarray:
+             output_fn: str, sigma: float) -> np.ndarray:
     '''Calculate UV spectrum from the PMM trajectory.
 
     Parameters:
