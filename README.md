@@ -73,7 +73,7 @@ to obtain info on how to use them.
 The main feature of PyMM is to perform MD-PMM calculations (arguments in "[]" are optional):
 
 ```
-PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomic_charges] -traj traj.xtc -top traj.tpr -q [QC_charge] -nm 1:3 -o [eigenval.txt] -oc [eigvecs]
+PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomic_charges] -traj traj.xtc -top traj.tpr -q [QC_charge] -nm 1:3 -o [eigvals.txt] -oc [eigvecs]
 ```
 
 * **-g** : QC geometry input file. Each line should be formatted as:
@@ -82,7 +82,7 @@ PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomi
 <atom symbol> <x> <y> <z> 
 ```
 
-> NOTE: The program also accept other types of formatting and will check and correct some errors.
+> **NOTE**: The program also accept other types of formatting and will check and correct some common errors.
 
 * -gu : units used in the QC geometry input file.
 
@@ -103,4 +103,39 @@ PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomi
 ```
 <atom1 state1 charge> <atom2 state1 charge> ...
 <atom1 state2 charge> <atom2 state2 charge> ...
+```
+
+* **-traj** : XTC file containing the MD simulation trajectory.
+
+* **-top** : TPR file corresponding to the XTC file. It's necessary to obtain the topology and the MM charges.
+
+* -q : QC total charge. By default is 0.
+
+* **-nm** : select the atoms of the QC in the MD simulation according to the atom indexes. Indexes start from 1. 
+
+> Example: select atoms from 1 to 5: 
+
+```
+-nm 1:5
+```
+
+> Example: select atoms 1 and 5:
+
+```
+-nm 1,5
+```
+
+> **NOTE**: the selection system follows the <em>bysum index-range</em> selection mode of [MDAnalysis](https://docs.mdanalysis.org/stable/documentation_pages/selections.html), a library that PyMM relies on.
+
+* -o : filename of the output containing the eigenvalues. By default it is "eigvals.txt".
+
+* -oc : filename of the output containing the eigenvectors (saved in the .npy format). By default it is "eigvecs" (i.e. <em>eigvecs.npy</em>).
+
+
+## calc_abs
+
+Program used to calculate the absorption spectrum of the QC. After running the MD-PMM calculation you can obtain the absorption spectrum using:
+
+```
+PyMM calc_abs -dm dipmat -el eigvals.txt -ev eigvecs.npy -sigma [0.0003] -ot [abs_spectrum]
 ```
