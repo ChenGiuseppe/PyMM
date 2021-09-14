@@ -1,6 +1,6 @@
 '''Functions needed for MD-PMM calculations'''
 
-from pmm.inputs import read_pmm_inputs
+from pymm.inputs import read_pmm_inputs
 import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
@@ -10,8 +10,8 @@ from MDAnalysis.analysis.rms import rmsd
 import numpy as np
 from numba import njit, prange
 from scipy import linalg
-import pmm.conversions as conv
-from pmm.conversions import Bohr2Ang
+import pymm.conversions as conv
+from pymm.conversions import Bohr2Ang
 
 
 def convert2Universe(geometry: np.ndarray) -> mda.Universe:

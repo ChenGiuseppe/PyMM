@@ -1,6 +1,6 @@
 import MDAnalysis as mda
 import numpy as np
-import pmm.conversions as conv
+import pymm.conversions as conv
 
 
 class Qc:

@@ -1,6 +1,6 @@
-from pmm.inputs import read_raw_matrix
-from pmm.pmm import pmm
-from pmm.spectra import calc_pert_matrix, calc_abs
+from pymm.inputs import read_raw_matrix
+from pymm.pmm import pmm
+from pymm.spectra import calc_pert_matrix, calc_abs
 import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
