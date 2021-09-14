@@ -1,7 +1,7 @@
 from pymm.inputs import read_raw_matrix
 from pymm.pmm import pmm
 from pymm.spectra import calc_pert_matrix, calc_abs
-import pymm.free_en import calc_dA
+from pymm.free_en import calc_dA, calc_dA_mean
 import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
@@ -72,7 +72,7 @@ def main():
                             help='Calculated absorption spectra names'
                             '(default: abs_spectrum)')
     # Calculate free energy
-    parser_dA = subparsers.add_parser('calc_dA',
+    parser_dA = subparsers.add_parser('free_en',
                                      help='Calculate free energy')
     parser_dA.add_argument('-T', '--temperature', action='store', type=float,
                            default=298., help='Temperature of the system '
@@ -104,9 +104,14 @@ def main():
         eigvecs = np.load(cmdline.eigvecs)
         pert_matrix = calc_pert_matrix(dip_matrix, eigvecs)
         calc_abs(eigvals, pert_matrix, cmdline.output, cmdline.sigma)
-    elif cmdline.command == 'calc_dA':
-        dA = calc_dA(cmdline.T, cmdline.en_in_in, cmdline.en_fin_in,
-                     cmdline.en_in_fin, cmdline.en_fin_fin)
+    elif cmdline.command == 'free_en':
+        col = 1
+        en_in_in = np.loadtxt(cmdline.en_in_in)[:,col]
+        en_fin_in = np.loadtxt(cmdline.en_fin_in)[:,col]
+        en_in_fin = np.loadtxt(cmdline.en_in_fin)[:,col]
+        en_fin_fin = np.loadtxt(cmdline.en_fin_fin)[:,col]
+        dA = calc_dA_mean(cmdline.temperature, en_in_in, en_fin_in,
+                     en_in_fin, en_fin_fin)
         with open(cmdline.output, 'w') as file_out:
             file_out.write('Free Energy\n')
             file_out.write(f'{dA} J/mol')

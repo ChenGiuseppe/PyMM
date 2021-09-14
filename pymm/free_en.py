@@ -1,14 +1,14 @@
 import numpy as np
 
-def calc_dA(T, file_en_ini, file_en_fin, state):
+def calc_dA(T, en_ini, en_fin, state):
     
     '''
     The variable state indicates the state of the
     ensemble over the average is performed.
     '''
     
-    en_ini = np.loadtxt(file_en_ini)[:,1]
-    en_fin = np.loadtxt(file_en_fin)[:,1]
+    # en_ini = np.loadtxt(file_en_ini)[:,]
+    # en_fin = np.loadtxt(file_en_fin)[:,]
 
     delta = en_fin - en_ini
 
