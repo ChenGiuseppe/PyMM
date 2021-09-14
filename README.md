@@ -142,7 +142,7 @@ PyMM calc_abs -dm dipmat -el eigvals.txt -ev eigvecs.npy -sigma [0.0003] -ot [ab
 
 ## free_en
 
-Calculate the free energy difference between two states (initial and final) each considered in the two ensembles (initial and final). The Zwanzig formula was used.
+Calculate the free energy difference between two states (initial and final) each considered in the two ensembles (of the initial and final state). The Zwanzig formula was used.
 
 ```
 PyMM free_en -T 298 -eii file1 -efi file2 -eif file3 -eff file4
