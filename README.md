@@ -113,17 +113,25 @@ PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomi
 
 * **-nm** : select the atoms of the QC in the MD simulation according to the atom indexes. Indexes start from 1. 
 
-> Example: select atoms from 1 to 5: 
+> Example 1: select atoms from 1 to 5: 
 
 ```
 -nm 1:5
 ```
 
-> Example: select atoms 1 and 5:
+> Example 2: select atoms 1 and 5:
 
 ```
--nm 1,5
+-nm "1 5"
 ```
+
+> Example 3: select atoms from 1 to 5 and 7:
+
+```
+-nm "1:5 7"
+```
+
+> **NOTE**: after -nm, when more than one atom range selection is specified, it's necessary to write the selection between the quotation marks "" (see Example 2 and 3). 
 
 > **NOTE**: the selection system follows the <em>bysum index-range</em> selection mode of [MDAnalysis](https://docs.mdanalysis.org/stable/documentation_pages/selections.html), a library that PyMM relies on.
 
