@@ -145,7 +145,7 @@ PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomi
 Program used to calculate the absorption spectrum of the QC. After running the MD-PMM calculation you can obtain the absorption spectrum using:
 
 ```
-PyMM calc_abs -dm dipmat -el eigvals.txt -ev eigvecs.npy -sigma [0.0003] -ot [abs_spectrum]
+pymm calc_abs -dm dipmat -el eigvals.txt -ev eigvecs.npy -sigma [0.0003] -ot [abs_spectrum]
 ```
 
 ### free_en
@@ -153,7 +153,7 @@ PyMM calc_abs -dm dipmat -el eigvals.txt -ev eigvecs.npy -sigma [0.0003] -ot [ab
 Calculate the free energy difference between two states (initial and final) each considered in the two ensembles (of the initial and final state). The Zwanzig formula was used.
 
 ```
-PyMM free_en -T 298 -eii file1 -efi file2 -eif file3 -eff file4
+pymm free_en -T 298 -eii file1 -efi file2 -eif file3 -eff file4
 ```
 
 > **NOTE**: The energy files are to be provided according to these scheme:
