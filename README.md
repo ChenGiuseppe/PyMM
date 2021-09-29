@@ -1,6 +1,6 @@
 # PyMM
 
-Computational chemistry package to perform MD-PMM calculations
+A computational chemistry package to perform MD-PMM calculations.
 
 ## Installation of required libraries
 
