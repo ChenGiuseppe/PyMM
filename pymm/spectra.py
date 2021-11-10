@@ -40,12 +40,13 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
     n_frames = energies.shape[0]
     # histos = []
     extra_range = 0.03
-    n_bins = int(round((exc_ens.max() + extra_range - (exc_ens.min() 
-             - extra_range)) / (0.0016 / (2 * np.pi * 10))))
-    bin_edges = np.histogram_bin_edges(exc_ens, range=(exc_ens.min() 
-                                                       - extra_range,
-                                                       exc_ens.max()
-                                                       + extra_range),
+    vmin = exc_ens.min() - extra_range
+    if vmin < 0.:
+        vmin = 0.
+    vmax = exc_ens.max() + extra_range
+    n_bins = int(round((vmax - vmin) / (0.0016 / (2 * np.pi * 10))))
+    bin_edges = np.histogram_bin_edges(exc_ens, range=(vmin,
+                                                       vmax),
                                        bins=n_bins)
     bin_step = bin_edges[1] - bin_edges[0]
     bin_centers = bin_edges[:-1] + bin_step / 2
