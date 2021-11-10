@@ -47,8 +47,8 @@ def main():
                         'reference (QM) geometry to be considered in the '
                         'MD-PMM calculation')
     parser_pmm.add_argument('-o', '--output', action='store', type=str,
-                        default='eigvals.txt', help='perturbed QC energies '
-                        '(default: eigvals.txt)')
+                        default='eigvals.dat', help='perturbed QC energies '
+                        '(default: eigvals.dat)')
     parser_pmm.add_argument('-oc', '--output_vecs', action='store', type=str,
                         default='eigvecs', help='perturbed eigenvectors '
                         '(default: eigvecs -> eigvecs.npy)')
@@ -59,7 +59,7 @@ def main():
                             help='QC unperturbed electric dipole moment matrix '
                             'filename')
     parser_abs.add_argument('-el', '--eigvals', action='store', type=str,
-                            default='eigvals.txt', help='Perturbed '
+                            default='eigvals.dat', help='Perturbed '
                             'eigenvalues trajectory (default: eigvals.npy)')
     parser_abs.add_argument('-ec', '--eigvecs', action='store', type=str,
                             default='eigvecs.npy', help='Perturbed '
@@ -93,9 +93,9 @@ def main():
                            help='Column (or electronic state) to consider '
                            'from the energies trajectory file') 
     parser_dA.add_argument('-o', '--output', action='store', type=str,
-                            default='dA_mean.txt',
+                            default='dA_mean.dat',
                             help='Calculated free energy differences'
-                            '(default: dA_mean.txt)')                    
+                            '(default: dA_mean.dat)')                    
     cmdline = parser.parse_args()
 
     start = timer()
