@@ -209,11 +209,30 @@ def read_pmm_inputs(cmdline):
                 (numpy.darray, shape=(n_el_states, n_atoms)).
         mm_traj (mda.Universe): MM simulation trajectory.
     '''
+    print('dev1')
     qc = read_raw_inputs(cmdline.ref_geom, cmdline.dip_matrix,
                                cmdline.energies, cmdline.charges)
-    if '.tpr' in cmdline.topology_path or '.xtc' in cmdline.trajectory_path:
+    if '.tpr' in cmdline.topology_path and '.xtc' in cmdline.trajectory_path:
             mm_traj = mda.Universe(cmdline.topology_path,
                                    cmdline.trajectory_path)
+    elif not '.tpr' in cmdline.topology_path:
+        try:
+            traj_charges = np.loadtxt(cmdline.topology_path)
+            mm_traj = mda.Universe(cmdline.trajectory_path)
+            try:
+                traj_charges = traj_charges[:,1]
+            except:
+                pass
+            mm_traj.add_TopologyAttr('charges', traj_charges)
+            masses = np.zeros_like(traj_charges)
+            #masses[:qc.geom.shape[0]] = qc.geom[:,0]
+            mm_traj.add_TopologyAttr('masses', masses)
+            qc_traj = mm_traj.select_atoms(f'bynum {cmdline.mm_indexes}')
+            qc_traj.atoms.masses = qc.geom[:,0]
+        except:
+            print('Topology file format not recognized/supported. See the documentation.')
+    print(mm_traj.atoms.masses)
+    print(mm_traj.atoms.charges)
     return qc, mm_traj
 
 if __name__ == '__main__':
