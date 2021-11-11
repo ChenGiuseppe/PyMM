@@ -1,3 +1,4 @@
+import logging
 import MDAnalysis as mda
 import numpy as np
 import pymm.conversions as conv
@@ -229,8 +230,9 @@ def read_pmm_inputs(cmdline):
             mm_traj.add_TopologyAttr('masses', masses)
             qc_traj = mm_traj.select_atoms(f'bynum {cmdline.mm_indexes}')
             qc_traj.atoms.masses = qc.geom[:,0]
-        except:
-            print('Topology file format not recognized/supported. See the documentation.')
+        except IOError:
+            logging.error('Topology file format not recognized/supported.',
+                  'See the documentation.')
     print(mm_traj.atoms.masses)
     print(mm_traj.atoms.charges)
     return qc, mm_traj

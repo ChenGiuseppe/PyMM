@@ -2,6 +2,9 @@ from pymm.inputs import read_raw_matrix
 from pymm.pmm import pmm
 from pymm.spectra import calc_pert_matrix, calc_abs
 from pymm.free_en import calc_dA, calc_dA_mean
+from datetime import datetime
+import getpass
+import logging
 import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
@@ -98,9 +101,22 @@ def main():
                             '(default: dA_mean.dat)')                    
     cmdline = parser.parse_args()
 
-    start = timer()
     if cmdline.command == 'run_pmm':
+        start = timer()
+        logging.basicConfig(filename='output.log', filemode='w', format='%(message)s',
+                            level=logging.INFO)
+        logging.info('PyMM: A computational package for PMM-MD simulations in Python.\n\n' +
+                     'User: {}\n'.format(getpass.getuser()) +
+                     'Date: {}'.format(datetime.today().strftime('%Y-%m-%d-%H:%M:%S')))
+        logging.info('Command used:')
+        logging.info('{}\n'.format(' '.join(sys.argv)))
+        logging.info('=========================================================')
+        logging.info('Launching PMM-MD calculation:\n')
+        logging.info('=========================================================')
         pmm(cmdline)
+        end = timer()
+        logging.info('\nFINISHED\nDate: {}.'.format(datetime.today().strftime('%Y-%m-%d-%H:%M:%S')) + 
+                     '\nThe calculation took: {}'.format(end - start))
     elif cmdline.command == 'calc_abs':
         dip_matrix = read_raw_matrix(cmdline.dip_matrix)
         eigvals = np.loadtxt(cmdline.eigvals)
@@ -118,6 +134,5 @@ def main():
         with open(cmdline.output, 'w') as file_out:
             file_out.write('Free Energy\n')
             file_out.write(f'{dA} J/mol')
-    end = timer()
-    print('The calculation took: ', end - start)
+    
     return 0

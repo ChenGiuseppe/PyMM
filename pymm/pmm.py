@@ -1,6 +1,7 @@
 '''Functions needed for MD-PMM calculations'''
 
 from pymm.inputs import read_pmm_inputs, write_geom
+import logging
 import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
@@ -255,6 +256,13 @@ def pmm(cmdline):
     # determine if the QC total charge is to be used or if the charge
     # distributions are provided.
     qc_ch_switch = isinstance(cmdline.charges, str)
+    if qc_ch_switch:
+        logging.info('PMM-MD calculation using the charges approximation ' +
+                     'has been selected.\n')
+    else:
+        logging.info('PMM-MD calculation using the dipole approximation ' +
+                     'has been selected.\n')
+    logging.info('=========================================================')
     # print(qc_ch_switch)
     # gather the electronic properties of the QC and load the MM trajectory
     qc, mm_traj = read_pmm_inputs(cmdline)
@@ -264,6 +272,7 @@ def pmm(cmdline):
         qc.geom[:, 1:] *= Bohr2Ang
     elif cmdline.geom_units.lower() == 'nm':
         qc.geom[:, 1:] *= 10
+
     # print(qm_inputs['geometry'])
     # print(qm_inputs)
     qc_ref = convert2Universe(qc.geom)
@@ -272,6 +281,39 @@ def pmm(cmdline):
         qc_ref = cut_qc(qc_ref, cmdline.qm_indexes)
     # shift the origin to the center of mass.
     qc_ref.atoms.positions -= qc_ref.atoms.center_of_mass()
+
+    n_qc_atoms = qc.geom.shape[0]
+    logging.info('Properties of the unperturbed QC:\n')
+    logging.info('=========================================================')
+    logging.info('QC geometry (a.u.):\nNumber of atoms: {}'.format(n_qc_atoms))
+    for i in range(n_qc_atoms):
+        logging.info('{:7.4} {:12.7f} {:12.7f} {:12.7f}'.format(qc.geom[i, 0],
+                                          *qc.geom[i, 1:] / Bohr2Ang))
+    logging.info('=========================================================')
+
+    n_qc_states = qc.energies.shape[0]
+    logging.info('\n=========================================================')
+    logging.info('QC electronic states energies (a.u.):\n' +
+                 'Number of electronic states: {}'.format(n_qc_states))
+    for i in range(n_qc_states):
+        logging.info('{:5d} {:12.7f}'.format(i, qc.energies[i]))
+    logging.info('=========================================================')
+
+    logging.info('\n=========================================================')
+    logging.info('Electric dipole matrix (a.u.):')
+    for i in range(n_qc_states):
+        for j in range(n_qc_states):
+            logging.info('{:5d} {:5d} {:12.7f} {:12.7f} {:12.7f}'.format(i, j, *qc.dip_matrix[i,j,:]))
+    logging.info('=========================================================')
+
+    logging.info('\n=========================================================')
+    logging.info('MD simululation details:')
+    logging.info('Total number of atoms: {}'.format(mm_traj.atoms.n_atoms))
+    logging.info('QC atoms indeces in the total system (starting from 1):\n'
+                 + ' '.join([str(i + 1) for i in qc_ref.atoms.indices]))
+    logging.info('=========================================================')
+
+
     # MD-PMM calculation.
     eigvals = np.zeros((mm_traj.trajectory.n_frames,
                        qc.energies.shape[0]))
@@ -316,6 +358,10 @@ def pmm(cmdline):
                header='Perturbed QC energies:')
     np.save(cmdline.output_vecs, eigvecs)
     write_geom(qc.geom)
+    logging.info('Results have been saved in:\n' +
+                 'Perturbed energies: {}\n'.format(cmdline.output) +
+                 'Eigenvectors: {}npy\n'.format(cmdline.output_vecs) +
+                 'QC reference geometry in .xyz format: {}'.format('qc_geom.xyz'))
     # print(eigvecs)
     # print(solv_traj.atoms.positions.shape)
     return 0
