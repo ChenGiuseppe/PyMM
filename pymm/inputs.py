@@ -13,7 +13,8 @@ class Qc:
 
 def read_raw_geom(geom_fn: str) -> np.ndarray:
     '''Read the geometry directly from a text file
-    (for each X atom: "X x y z\n").
+    (for each X atom: "X x y z\n" where X can be the element symbol
+    or the atomic mass).
 
     Parameters:
         geom_fn (str): geometry filename.

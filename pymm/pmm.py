@@ -416,11 +416,11 @@ def pmm(cmdline):
     for i in range(n_qc_atoms):
         logging.info('{:7.4} {:12.7f} {:12.7f} {:12.7f}'.format(qc.geom[i, 0],
                                           *qc.geom[i, 1:] / Bohr2Ang))
-    logging.info('--------------------------------------------------------------------------\n')
+    logging.info('\n--------------------------------------------------------------------------\n')
 
     if cmdline.match:
         logging.info(' * The reference QC geometry will be reordered to match '
-                     'the atoms order in the MD simulation.\n')
+                     'the atoms order in\n   the MD simulation.\n')
         # match QC atoms order of the reference geometry with the MD simulation. 
         new_indices = match_qc(order_mass(qc_traj, qc_ref), qc_traj, qc_ref)
         qc_ref.atoms.masses = qc_ref.atoms.masses[new_indices]
