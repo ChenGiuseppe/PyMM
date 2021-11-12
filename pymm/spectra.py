@@ -22,7 +22,7 @@ def calc_pert_matrix(unpert_matrixs: np.ndarray,
     return pert_matrixs
 
 def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
-             output_fn: str, sigma: float) -> np.ndarray:
+             output_fn: str, sigma: float, extra_range) -> np.ndarray:
     '''Calculate UV spectrum from the PMM trajectory.
 
     Parameters:
@@ -33,13 +33,15 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
         sigma (float): TODO: #5 add description to sigma
     Returns:
     '''
+
     fig, ax = plt.subplots(1, 1, figsize=(8,5))
+
     exc_ens = (energies[:, 1:] - np.expand_dims(energies[:, 0], axis=1)) / (2
               * np.pi)
     mu_squareds = (pert_matrix[:, 0, 1:, :]**2).sum(axis=2)
     n_frames = energies.shape[0]
     # histos = []
-    extra_range = 0.03
+
     vmin = exc_ens.min() - extra_range
     if vmin < 0.:
         vmin = 0.
@@ -68,12 +70,14 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
     lambdas = 137 * 0.0529 / bin_centers
     tot_spectrum = np.vstack((lambdas, tot_spectrum)).transpose((1,0))
     spectra = np.vstack((lambdas, spectra)).transpose((1,0))
-    np.savetxt(f'tot_{output_fn}.txt', tot_spectrum)
-    np.savetxt(f'{output_fn}_transitions.txt', spectra)
+    np.savetxt(f'{output_fn}_tot.dat', tot_spectrum)
+    np.savetxt(f'{output_fn}_transitions.dat', spectra)
     ax.plot(lambdas, tot_spectrum[:, 1] * 16863 / 2.3)
     for i in range(1, spectra.shape[1]):
         ax.plot(lambdas, spectra[:, i] * 16863 / 2.3)
     plt.show()
+
+    return 0
 
 if __name__ == '__main__':
     def read_raw_matrix(matrix_fn: str) -> np.ndarray:

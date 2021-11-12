@@ -488,14 +488,17 @@ def pmm(cmdline):
         eigvals[i, :] = eigval
         eigvecs[i, :, :] = eigvec
         # print('eigenvec', eigvec)
-    np.savetxt(cmdline.output, eigvals,
+
+    np.savetxt('{}_eigvals.dat'.format(cmdline.output), eigvals,
                header='Perturbed QC energies:')
-    np.save(cmdline.output_vecs, eigvecs)
-    # write_geom(qc.geom)
+    np.save('{}_eigvecs'.format(cmdline.output), eigvecs)
+
+    xyz_fn = '{}_qc_geom.xyz'.format(cmdline.output)
+    write_geom(xyz_fn, qc.geom)
     logging.info('Results have been saved in:\n' +
-                 'Perturbed energies: {}\n'.format(cmdline.output) +
-                 'Eigenvectors: {}npy\n'.format(cmdline.output_vecs) +
-                 'QC reference geometry in .xyz format: {}'.format('qc_geom.xyz'))
+                 'Perturbed energies: {}_eigvals.dat\n'.format(cmdline.output) +
+                 'Eigenvectors: {}_eigvecs.npy\n'.format(cmdline.output) +
+                 'QC reference geometry in .xyz format: {}'.format(xyz_fn))
     # print(eigvecs)
     # print(solv_traj.atoms.positions.shape)
 

@@ -53,11 +53,9 @@ def main():
                             help='Reorder the QC reference geometry '
                             'to match the atoms order in the MD simulation')
     parser_pmm.add_argument('-o', '--output', action='store', type=str,
-                        default='eigvals.dat', help='perturbed QC energies '
-                        '(default: eigvals.dat)')
-    parser_pmm.add_argument('-oc', '--output_vecs', action='store', type=str,
-                        default='eigvecs', help='perturbed eigenvectors '
-                        '(default: eigvecs -> eigvecs.npy)')
+                        default='pymm', help='job name used to name the '
+                        'output files (default: pymm)')
+
     # Calculate absorption spectra.
     parser_abs = subparsers.add_parser('calc_abs',
                                        help='Calculate absorption spectra')
@@ -66,13 +64,17 @@ def main():
                             'filename')
     parser_abs.add_argument('-el', '--eigvals', action='store', type=str,
                             default='eigvals.dat', help='Perturbed '
-                            'eigenvalues trajectory (default: eigvals.npy)')
+                            'eigenvalues trajectory (default: eigvals.dat)')
     parser_abs.add_argument('-ec', '--eigvecs', action='store', type=str,
                             default='eigvecs.npy', help='Perturbed '
                             'eigenvectors trajectory (default: eigvecs.npy)')
     parser_abs.add_argument('-sigma', action='store', type=float,
                             default=0.0003, help='Sigma value of the gaussian '
                             'broadening of the signal (expressed as frequency)')
+    parser_abs.add_argument('-xtr', '--extra-range', action='store', type=float,
+                            default=0.005, help='Additional value to add to the'
+                            'frequency range considered for the spectrum '
+                            'calculation')
     parser_abs.add_argument('-ot', '--output', action='store', type=str,
                             default='abs_spectrum',
                             help='Calculated absorption spectra names'
@@ -106,7 +108,8 @@ def main():
 
     if cmdline.command == 'run_pmm':
         start = timer()
-        logging.basicConfig(filename='output.log', filemode='w', format='%(message)s',
+        logging.basicConfig(#filename='output.log', filemode='w',
+                            format='%(message)s',
                             level=logging.INFO)
         logging.info('PyMM: A computational package for PMM-MD simulations in Python.\n\n' +
                      'User: {}\n'.format(getpass.getuser()) +
@@ -125,7 +128,7 @@ def main():
         eigvals = np.loadtxt(cmdline.eigvals)
         eigvecs = np.load(cmdline.eigvecs)
         pert_matrix = calc_pert_matrix(dip_matrix, eigvecs)
-        calc_abs(eigvals, pert_matrix, cmdline.output, cmdline.sigma)
+        calc_abs(eigvals, pert_matrix, cmdline.output, cmdline.sigma, cmdline.extra_range)
     elif cmdline.command == 'free_en':
         col = 0
         en_in_in = np.loadtxt(cmdline.en_in_in)[:,col]
