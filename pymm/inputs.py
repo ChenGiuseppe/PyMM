@@ -60,11 +60,11 @@ def read_raw_geom(geom_fn: str) -> np.ndarray:
     geom_tmp[:] = geom
     return geom_tmp
 
-def write_geom(geom: np.ndarray):
+def write_geom(filename, geom: np.ndarray):
     '''Write a .xyz geometry file readable by Avogadro (and maybe other
     programs too'''
     n_atoms = geom.shape[0]
-    with open('qc_geom.xyz', 'w') as geom_out:
+    with open(filename, 'w') as geom_out:
         geom_out.write(f'{n_atoms}\n\n')
         for i in range(n_atoms):
             geom_out.write('{} {} {} {}\n'.format(
@@ -210,14 +210,22 @@ def read_pmm_inputs(cmdline):
                 (numpy.darray, shape=(n_el_states, n_atoms)).
         mm_traj (mda.Universe): MM simulation trajectory.
     '''
-    print('dev1')
+
     qc = read_raw_inputs(cmdline.ref_geom, cmdline.dip_matrix,
                                cmdline.energies, cmdline.charges)
     if '.tpr' in cmdline.topology_path and '.xtc' in cmdline.trajectory_path:
             mm_traj = mda.Universe(cmdline.topology_path,
                                    cmdline.trajectory_path)
+    elif not '.xtc' in cmdline.trajectory_path:
+        raise IOError('XTC file was not provided.')
     elif not '.tpr' in cmdline.topology_path:
         try:
+            logging.info('TPR file was not provided. A formatted text file with ' +
+                         'the MD simulation system charges was provided instead')
+            logging.warning('!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!\n'
+                            'The atoms order in the reference geometry must match the ' +
+                            'order in the MD simulation\n' +
+                            '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
             traj_charges = np.loadtxt(cmdline.topology_path)
             mm_traj = mda.Universe(cmdline.trajectory_path)
             try:
@@ -231,7 +239,7 @@ def read_pmm_inputs(cmdline):
             qc_traj = mm_traj.select_atoms(f'bynum {cmdline.mm_indexes}')
             qc_traj.atoms.masses = qc.geom[:,0]
         except IOError:
-            logging.error('Topology file format not recognized/supported.',
+            logging.error('Topology file format not recognized/supported.' +
                   'See the documentation.')
     print(mm_traj.atoms.masses)
     print(mm_traj.atoms.charges)
