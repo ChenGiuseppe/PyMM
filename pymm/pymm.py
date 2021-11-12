@@ -63,11 +63,11 @@ def main():
                             help='QC unperturbed electric dipole moment matrix '
                             'filename')
     parser_abs.add_argument('-el', '--eigvals', action='store', type=str,
-                            default='eigvals.dat', help='Perturbed '
-                            'eigenvalues trajectory (default: eigvals.dat)')
+                            default='pymm_eigvals.dat', help='Perturbed '
+                            'eigenvalues trajectory (default: pymm_eigvals.dat)')
     parser_abs.add_argument('-ec', '--eigvecs', action='store', type=str,
-                            default='eigvecs.npy', help='Perturbed '
-                            'eigenvectors trajectory (default: eigvecs.npy)')
+                            default='pymm_eigvecs.npy', help='Perturbed '
+                            'eigenvectors trajectory (default: pymm_eigvecs.npy)')
     parser_abs.add_argument('-sigma', action='store', type=float,
                             default=0.0003, help='Sigma value of the gaussian '
                             'broadening of the signal (expressed as frequency)')
