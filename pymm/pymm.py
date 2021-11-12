@@ -49,6 +49,9 @@ def main():
                         default=False, help='indexes of the portion of the '
                         'reference (QM) geometry to be considered in the '
                         'MD-PMM calculation')
+    parser_pmm.add_argument('-m', '--match', action='store_true',
+                            help='Reorder the QC reference geometry '
+                            'to match the atoms order in the MD simulation')
     parser_pmm.add_argument('-o', '--output', action='store', type=str,
                         default='eigvals.dat', help='perturbed QC energies '
                         '(default: eigvals.dat)')
