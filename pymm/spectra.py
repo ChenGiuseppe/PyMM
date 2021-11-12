@@ -34,6 +34,8 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
     Returns:
     '''
 
+    mpl.style.use('seaborn-colorblind')
+
     fig, ax = plt.subplots(1, 1, figsize=(8,5))
 
     exc_ens = (energies[:, 1:] - np.expand_dims(energies[:, 0], axis=1)) / (2
@@ -72,9 +74,16 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
     spectra = np.vstack((lambdas, spectra)).transpose((1,0))
     np.savetxt(f'{output_fn}_tot.dat', tot_spectrum)
     np.savetxt(f'{output_fn}_transitions.dat', spectra)
-    ax.plot(lambdas, tot_spectrum[:, 1] * 16863 / 2.3)
     for i in range(1, spectra.shape[1]):
-        ax.plot(lambdas, spectra[:, i] * 16863 / 2.3)
+        ax.plot(lambdas, spectra[:, i] * 16863 / 2.3, label=r'0 $\longrightarrow$ {}'.format(i))
+    ax.plot(lambdas, tot_spectrum[:, 1] * 16863 / 2.3, color='k',
+            linestyle='--', label='Total spectrum')
+
+    ax.set_xlabel('wavelength (nm)')
+    ax.set_ylabel('$\epsilon$ (M$^{-1}$cm$^{-1}$)')
+
+    ax.legend(frameon=False)
+
     plt.show()
 
     return 0
