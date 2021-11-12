@@ -17,6 +17,7 @@ def calc_pert_matrix(unpert_matrixs: np.ndarray,
         pert_matrixs (np.ndarray): (n_frames, n_states_n_states, 3) perturbed
             matrix trajectory.
     '''
+
     pert_matrixs = np.einsum('ijk,mjn->mink', unpert_matrixs, eigvecs)
     pert_matrixs = np.einsum('ijk,ijmn->ikmn', eigvecs, pert_matrixs)
     return pert_matrixs
@@ -89,61 +90,4 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
     return 0
 
 if __name__ == '__main__':
-    def read_raw_matrix(matrix_fn: str) -> np.ndarray:
-        '''Read a (N, N, 3) matrix directly from a text file
-    (for each matrix element i j: "i j x y z\n").
-
-    Parameters:
-        matrix_fn (str): matrix filename.
-
-    Returns:
-        matrix (np.ndarray): matrix as a numpy array.
-    '''
-        with open(matrix_fn, 'r') as matrix_file:
-            matrix_x = []
-            matrix_y = []
-            matrix_z = []
-            for i, line in enumerate(matrix_file):
-                content = line.split()
-                # print(i, content)
-                # Check if the first line is to be read.
-                if i == 0 and not (len(content) == 3 or len(content) == 5):
-                    continue
-                # NOTE: skip empty line. It was added having in mind the
-                # possibility that the last line could be empty, as it is now it
-                # accounts for all empty lines.
-                elif content == []:
-                    continue
-                elif not (len(content) == 3 or len(content) == 5):
-                    raise ValueError("There's an error in the matrix file " +
-                                     f'at line {i}: there are ' +
-                                     f'{len(content)} elements.\n' +
-                                     f'{line}')
-                if len(content) == 3:
-                    matrix_x.append(float(content[0]))
-                    matrix_y.append(float(content[1]))
-                    matrix_z.append(float(content[2]))
-                elif len(content) == 5:
-                    matrix_x.append(float(content[2]))
-                    matrix_y.append(float(content[3]))
-                    matrix_z.append(float(content[4]))
-        n_rows = round(np.sqrt(len(matrix_x)))
-        # Workaround to the maximum dimension of npdarray (32).
-        matrix_tmp = np.zeros_like(matrix_x)
-        # print(len(matrix_x), np.sqrt(len(matrix_x)), n_rows)
-        matrix_tmp[:] = matrix_x
-        matrix_x = np.copy(matrix_tmp.reshape((n_rows, n_rows)))
-        matrix_tmp[:] = matrix_y
-        matrix_y = np.copy(matrix_tmp.reshape((n_rows, n_rows)))
-        matrix_tmp[:] = matrix_z
-        matrix_z = np.copy(matrix_tmp.reshape((n_rows, n_rows)))
-        # print(matrix_x, matrix_y, matrix_z)
-        matrix = np.stack((matrix_x, matrix_y, matrix_z), axis=2)
-        return matrix
-    matrix = read_raw_matrix('/mnt/d/Dottorato/Programs/prova/thioindigo/matrix_pbe0')
-    energies = np.loadtxt('/mnt/d/Dottorato/Programs/prova/thioindigo/eigenvals_last.txt')
-    eigvecs = np.load('/mnt/d/Dottorato/Programs/prova/thioindigo/eigenvecs.npy')
-    pert_matrix = calc_pert_matrix(matrix, eigvecs)
-    calc_abs(energies, pert_matrix)
-    #for i in range(100):
-    #    print(i, energies[i,1]-energies[i,0], (pert_matrix[i,0,1,:]**2).sum())
+    pass
