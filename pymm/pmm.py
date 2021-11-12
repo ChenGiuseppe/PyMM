@@ -122,7 +122,7 @@ def order_mass(traj_geom: mda.core.groups.AtomGroup,
 
 
 def match_qc(indices: list, traj_geom: mda.core.groups.AtomGroup,
-             ref_geom: mda.Universe) -> np.ndarray:
+             ref_geom: mda.Universe) -> list:
     '''Find the correct order of the QC atoms to match the MD simulation.
     A brute force approach was employed (obtain all the permutations and
     select the one with the smallest value of RMSD).
@@ -136,8 +136,8 @@ def match_qc(indices: list, traj_geom: mda.core.groups.AtomGroup,
             calculation. In a.u..
 
     Returns:
-        new_masses (np.ndarray): correctedly ordered QC masses.
-        new_coor (np.ndarray): correctedly ordered QC coordinates.
+        new_indices: list of indices that match the QC atoms order in the
+        MD simulation.
     '''
 
     cdm = traj_geom.atoms.center_of_mass()
@@ -188,10 +188,11 @@ def match_qc(indices: list, traj_geom: mda.core.groups.AtomGroup,
         #print(i)
         new_indices[i[0]] = i[1]
 
-    logging.info('Old indices:\n' +' '.join([str(i) for i in indices]) + '\n' +
-                 'Ordered indices:\n' + ' '.join([str(i) for i  in new_indices]))
+    logging.info(' ** Old indices:\n' +' '.join([str(i) for i in indices]) + '\n' +
+                 ' ** Ordered indices:\n' + ' '.join([str(i) for i  in new_indices]) +
+                 '\n')
 
-    return ref_geom.atoms.masses[new_indices], ref_geom.atoms.positions[new_indices,:]
+    return new_indices
 
 
 
@@ -375,12 +376,11 @@ def pmm(cmdline):
     # distributions are provided.
     qc_ch_switch = isinstance(cmdline.charges, str)
     if qc_ch_switch:
-        logging.info('PMM-MD calculation using the charges approximation ' +
+        logging.info(' * PMM-MD calculation using the charges approximation ' +
                      'has been selected.\n')
     else:
-        logging.info('PMM-MD calculation using the dipole approximation ' +
+        logging.info(' * PMM-MD calculation using the dipole approximation ' +
                      'has been selected.\n')
-    logging.info('=========================================================')
     # print(qc_ch_switch)
     # gather the electronic properties of the QC and load the MM trajectory
     qc, mm_traj = read_pmm_inputs(cmdline)
@@ -405,50 +405,70 @@ def pmm(cmdline):
     qc_traj, solv_traj = split_qc_solv(mm_traj, cmdline.mm_indexes)
 
     n_qc_atoms = qc.geom.shape[0]
-    logging.info('Properties of the unperturbed QC:\n')
-    logging.info('=========================================================')
-    logging.info('Initial QC geometry (a.u.):\nNumber of atoms: {}'.format(n_qc_atoms))
+    logging.info('\n\n'
+                 '==========================================================================\n'
+                 '|                                                                        |\n'
+                 '|                Properties of the unperturbed QC:                       |\n'
+                 '|                                                                        |\n'
+                 '==========================================================================\n'
+                 '\n')
+    logging.info(' * Initial QC geometry (a.u.):\nNumber of atoms: {}'.format(n_qc_atoms))
     for i in range(n_qc_atoms):
         logging.info('{:7.4} {:12.7f} {:12.7f} {:12.7f}'.format(qc.geom[i, 0],
                                           *qc.geom[i, 1:] / Bohr2Ang))
-    logging.info('=========================================================')
+    logging.info('--------------------------------------------------------------------------\n')
 
     if cmdline.match:
-        logging.info('\nThe reference QC geometry will be reordered to match '
+        logging.info(' * The reference QC geometry will be reordered to match '
                      'the atoms order in the MD simulation.\n')
         # match QC atoms order of the reference geometry with the MD simulation. 
-        qc_ref.atoms.masses, qc_ref.atoms.positions = match_qc(order_mass(qc_traj, qc_ref),
-                                                                          qc_traj, qc_ref)
+        new_indices = match_qc(order_mass(qc_traj, qc_ref), qc_traj, qc_ref)
+        qc_ref.atoms.masses = qc_ref.atoms.masses[new_indices]
+        qc_ref.atoms.positions = qc_ref.atoms.positions[new_indices,:]
+        qc.geom = qc.geom[new_indices,:]
+        if qc_ch_switch:
+            qc.charges = qc.charges[:,new_indices]
 
-        logging.info('=========================================================')
-        logging.info('Final QC geometry (a.u.):\nNumber of atoms: {}'.format(n_qc_atoms))
+        logging.info('--------------------------------------------------------------------------\n')
+        logging.info(' * Final QC geometry (a.u.):\nNumber of atoms: {}'.format(n_qc_atoms))
         for i in range(n_qc_atoms):
             logging.info('{:7.4} {:12.7f} {:12.7f} {:12.7f}'.format(qc.geom[i, 0],
                                                                     *qc.geom[i, 1:] / Bohr2Ang))
-        logging.info('=========================================================')
+        logging.info('\n--------------------------------------------------------------------------\n')
 
     n_qc_states = qc.energies.shape[0]
-    logging.info('\n=========================================================')
-    logging.info('QC electronic states energies (a.u.):\n' +
+    logging.info(' * QC electronic states energies (a.u.):\n' +
                  'Number of electronic states: {}'.format(n_qc_states))
     for i in range(n_qc_states):
         logging.info('{:5d} {:12.7f}'.format(i, qc.energies[i]))
-    logging.info('=========================================================')
+    logging.info('\n--------------------------------------------------------------------------\n')
 
-    logging.info('\n=========================================================')
-    logging.info('Electric dipole matrix (a.u.):')
+    logging.info(' * Electric dipole matrix (a.u.):')
     for i in range(n_qc_states):
         for j in range(n_qc_states):
             logging.info('{:5d} {:5d} {:12.7f} {:12.7f} {:12.7f}'.format(i, j, *qc.dip_matrix[i,j,:]))
-    logging.info('=========================================================')
+    logging.info('\n--------------------------------------------------------------------------\n')
 
-    logging.info('\n=========================================================')
-    logging.info('MD simulation details:')
-    logging.info('Total number of atoms: {}'.format(mm_traj.atoms.n_atoms))
-    logging.info('QC atoms indeces in the total system (starting from 1):\n'
-                 + ' '.join([str(i + 1) for i in qc_ref.atoms.indices]))
-    logging.info('=========================================================')
+    if qc_ch_switch:
+        logging.info(' * QC atomic charges:\n\n')
+        for i in range(n_qc_states):
+            logging.info(' ** Electronic state {}:'.format(i))
+            for j in range(n_qc_atoms):
+                logging.info('{:7.4f} {:12.7f}'.format(qc_ref.atoms.masses[j], qc.charges[i,j]))
+            logging.info('\n')
+        logging.info('\n--------------------------------------------------------------------------\n')
 
+    logging.info('\n\n'
+                 '==========================================================================\n'
+                 '|                                                                        |\n'
+                 '|                       MD simulation details                            |\n'
+                 '|                                                                        |\n'
+                 '==========================================================================\n')
+    logging.info(' * Total number of atoms: {}\n'.format(mm_traj.atoms.n_atoms) +
+                 ' * Number of frames in the trajectory: {}\n'.format(mm_traj.trajectory.n_frames) +
+                 ' * QC atoms indeces in the total system (starting from 1):\n' +
+                 ' '.join([str(i + 1) for i in qc_ref.atoms.indices]) +
+                 '\n\n--------------------------------------------------------------------------\n')
 
     # MD-PMM calculation.
     eigvals = np.zeros((mm_traj.trajectory.n_frames,
@@ -461,6 +481,7 @@ def pmm(cmdline):
     # print(qc_traj.atoms.center_of_mass().dtype,
     #       solv_traj.atoms.positions.dtype)
     for i, frame in enumerate(mm_traj.trajectory):
+        # print(i)
         # print(solv_traj.atoms.positions)
         # cdm_qc_traj = qc_traj.atoms.center_of_mass().astype('float32')
         # print(cdm_qc_traj.dtype, solv_traj.atoms.positions.dtype)
@@ -495,10 +516,16 @@ def pmm(cmdline):
 
     xyz_fn = '{}_qc_geom.xyz'.format(cmdline.output)
     write_geom(xyz_fn, qc.geom)
-    logging.info('Results have been saved in:\n' +
-                 'Perturbed energies: {}_eigvals.dat\n'.format(cmdline.output) +
-                 'Eigenvectors: {}_eigvecs.npy\n'.format(cmdline.output) +
-                 'QC reference geometry in .xyz format: {}'.format(xyz_fn))
+    logging.info('==========================================================================\n'
+                 '|                                                                        |\n'
+                 '|                               OUTPUT                                   |\n'
+                 '|                                                                        |\n'
+                 '==========================================================================\n'
+                 '\n'
+                 ' * Results have been saved in:\n' +
+                 ' ** Perturbed energies: {}_eigvals.dat\n'.format(cmdline.output) +
+                 ' ** Eigenvectors: {}_eigvecs.npy\n'.format(cmdline.output) +
+                 ' ** QC reference geometry in .xyz format: {}'.format(xyz_fn))
     # print(eigvecs)
     # print(solv_traj.atoms.positions.shape)
 

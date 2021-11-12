@@ -49,7 +49,7 @@ def main():
                         default=False, help='indexes of the portion of the '
                         'reference (QM) geometry to be considered in the '
                         'MD-PMM calculation')
-    parser_pmm.add_argument('-m', '--match', action='store_true',
+    parser_pmm.add_argument('--match', action='store_true',
                             help='Reorder the QC reference geometry '
                             'to match the atoms order in the MD simulation')
     parser_pmm.add_argument('-o', '--output', action='store', type=str,
@@ -108,27 +108,47 @@ def main():
 
     if cmdline.command == 'run_pmm':
         start = timer()
+
         logging.basicConfig(#filename='output.log', filemode='w',
                             format='%(message)s',
                             level=logging.INFO)
-        logging.info('PyMM: A computational package for PMM-MD simulations in Python.\n\n' +
+        logging.info('==========================================================================\n'
+                     '|    PyMM: A computational package for PMM-MD simulations in Python.     |\n'
+                     '==========================================================================\n\n'
                      'User: {}\n'.format(getpass.getuser()) +
                      'Date: {}'.format(datetime.today().strftime('%Y-%m-%d-%H:%M:%S')))
-        logging.info('Command used:')
-        logging.info('{}\n'.format(' '.join(sys.argv)))
-        logging.info('=========================================================')
-        logging.info('Launching PMM-MD calculation:\n')
-        logging.info('=========================================================')
+        logging.info('\nJob launched:')
+        logging.info('{}\n\n\n'.format(' '.join(sys.argv)))
+        logging.info('==========================================================================\n'
+                     '|                                                                        |\n'
+                     '|                  Launching PMM-MD calculation:                         |\n'
+                     '|                                                                        |\n'
+                     '==========================================================================\n')
+
         pmm(cmdline)
+    
         end = timer()
-        logging.info('\nFINISHED\nDate: {}.'.format(datetime.today().strftime('%Y-%m-%d-%H:%M:%S')) + 
-                     '\nThe calculation took: {}'.format(end - start))
+
+        logging.info('\n'
+                     '==========================================================================\n'
+                     '|                                                                        |\n'
+                     '|                                 FINISHED                               |\n'
+                     '|                                                                        |\n'
+                     '==========================================================================\n'
+                     '\n'
+                     'Date: {}.'.format(datetime.today().strftime('%Y-%m-%d-%H:%M:%S')) + 
+                     '\n'
+                     'The calculation took: {}'.format(end - start) +
+                     '\n\n'
+                     '--------------------------------------------------------------------------\n')
+
     elif cmdline.command == 'calc_abs':
         dip_matrix = read_raw_matrix(cmdline.dip_matrix)
         eigvals = np.loadtxt(cmdline.eigvals)
         eigvecs = np.load(cmdline.eigvecs)
         pert_matrix = calc_pert_matrix(dip_matrix, eigvecs)
         calc_abs(eigvals, pert_matrix, cmdline.output, cmdline.sigma, cmdline.extra_range)
+
     elif cmdline.command == 'free_en':
         col = 0
         en_in_in = np.loadtxt(cmdline.en_in_in)[:,col]

@@ -52,17 +52,19 @@ def read_raw_geom(geom_fn: str) -> np.ndarray:
                 geom.append([conv.symbol2mass[content[0][0]]] +
                             [float(j) for j in content[1:]])
             except ValueError:
-                print('Expects the fist element of each line',
-                      'to begin with the atomic mass (float)',
-                      'or a string that begins with the letter',
-                      'corresponding to its symbol.')
+                logging.critical('Expects the fist element of each line '
+                                 'to begin with the atomic mass (float) '
+                                 'or a string that begins with the letter '
+                                 'corresponding to its symbol.')
     geom_tmp = np.zeros_like(geom)
     geom_tmp[:] = geom
+
     return geom_tmp
 
 def write_geom(filename, geom: np.ndarray):
     '''Write a .xyz geometry file readable by Avogadro (and maybe other
     programs too'''
+
     n_atoms = geom.shape[0]
     with open(filename, 'w') as geom_out:
         geom_out.write(f'{n_atoms}\n\n')
@@ -80,6 +82,7 @@ def read_raw_matrix(matrix_fn: str) -> np.ndarray:
     Returns:
         matrix (np.ndarray): matrix as a numpy array.
     '''
+
     with open(matrix_fn, 'r') as matrix_file:
         matrix_x = []
         matrix_y = []
@@ -120,6 +123,7 @@ def read_raw_matrix(matrix_fn: str) -> np.ndarray:
     matrix_z = np.copy(matrix_tmp.reshape((n_rows, n_rows)))
     # print(matrix_x, matrix_y, matrix_z)
     matrix = np.stack((matrix_x, matrix_y, matrix_z), axis=2)
+
     return matrix
 
 
@@ -133,6 +137,7 @@ def read_raw_energies(energies_fn: str) -> np.ndarray:
     Returns:
         energies_tmp (np.ndarray): energies as a numpy array.
     '''
+
     with open(energies_fn, 'r') as energies_file:
         energies = []
         for line in energies_file:
@@ -141,10 +146,11 @@ def read_raw_energies(energies_fn: str) -> np.ndarray:
             try:
                 energies.append(float(line.strip()))
             except ValueError:
-                print('There are values that are not float',
-                      'in the energies file.')
+                logging.critical('There are values that are not <float> '
+                                 'in the energies file.')
     energies_tmp = np.zeros_like(energies)
     energies_tmp[:] = energies
+
     return energies_tmp
 
 
@@ -159,7 +165,9 @@ def read_raw_charges(charges_fn: str) -> np.ndarray:
         charges_tmp (np.ndarray): charges as a numpy matrix file
         (n_el_states, n_atoms).
     '''
+
     charges = []
+
     with open(charges_fn, 'r') as charges_file:
         for line in charges_file:
             content = line.split()
@@ -168,15 +176,18 @@ def read_raw_charges(charges_fn: str) -> np.ndarray:
             try:
                 charges.append([float(i) for i in content])
             except ValueError:
-                print('There are values that are not float in the',
-                      'charges file.')
+                logging.critical('There are values that are not <float> in the '
+                                 'charges file.')
+
     charges_tmp = np.zeros_like(charges)
     charges_tmp[:, :] = charges
+
     return charges_tmp
 
 
 def read_raw_inputs(geom_fn: str, dip_mat_fn: str,
                    energies_fn: str, charges_fn=False) -> None:
+    
     if charges_fn:
         qm_charges = read_raw_charges(charges_fn)
     else:
@@ -185,6 +196,7 @@ def read_raw_inputs(geom_fn: str, dip_mat_fn: str,
             read_raw_matrix(dip_mat_fn),
             read_raw_energies(energies_fn),
             qm_charges)
+
     return qc
 
 def read_pmm_inputs(cmdline):
@@ -220,12 +232,12 @@ def read_pmm_inputs(cmdline):
         raise IOError('XTC file was not provided.')
     elif not '.tpr' in cmdline.topology_path:
         try:
-            logging.info('TPR file was not provided. A formatted text file with ' +
-                         'the MD simulation system charges was provided instead')
-            logging.warning('!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!\n'
-                            'The atoms order in the reference geometry must match the ' +
-                            'order in the MD simulation\n' +
-                            '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            logging.info(' * TPR file was not provided. A formatted text file with '
+                         'the MD simulation system charges was provided instead.')
+            logging.warning('\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
+                              '!     The atoms order in the reference geometry must match the order     !\n'
+                              '!     in the MD simulation.                                              !\n'
+                              '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n')
             traj_charges = np.loadtxt(cmdline.topology_path)
             mm_traj = mda.Universe(cmdline.trajectory_path)
             try:
@@ -240,9 +252,10 @@ def read_pmm_inputs(cmdline):
             qc_traj.atoms.masses = qc.geom[:,0]
         except IOError:
             logging.error('Topology file format not recognized/supported.' +
-                  'See the documentation.')
-    print(mm_traj.atoms.masses)
-    print(mm_traj.atoms.charges)
+                          'See the documentation.')
+    #print(mm_traj.atoms.masses)
+    #print(mm_traj.atoms.charges)
+
     return qc, mm_traj
 
 if __name__ == '__main__':
