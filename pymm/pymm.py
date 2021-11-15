@@ -1,3 +1,4 @@
+from pymm.eigvecs import get_ext, eig_corr, eig_corr_tot, eig_hist
 from pymm.inputs import read_raw_matrix
 from pymm.pmm import pmm
 from pymm.spectra import calc_pert_matrix, calc_abs
@@ -104,13 +105,52 @@ def main():
                             default='dA_mean.dat',
                             help='Calculated free energy differences'
                             '(default: dA_mean.dat)')                    
+
+    # Eigenvectors analysis 
+    parser_eig = subparsers.add_parser('eig', help='Analyse the perturbed '
+                                       'eigenvectors')
+    parser_eig.add_argument('-i', '--input', action='store', type=str,
+                            default='pymm_eigvecs.npy',
+                            help='Perturbed eigenvectors trajectory provided '
+                            'as an npy file (n_frames, n_unp_states, n_per_states;'
+                            'default=pymm_eigvecs.npy).')
+    parser_eig.add_argument('-first', action='store', type=int, default=0,
+                            help='First unperturbed state to consider (ignored'
+                            ' when calculating the cumulative histograms; '
+                            'default=0, i.e. the electronic ground state).')
+    parser_eig.add_argument('-last', action='store', type=int,
+                            help='Last unperturbed state to consider.')
+    parser_eig.add_argument('-state', action='store', type=int,
+                            help='Perturbed state to consider.')
+    parser_eig.add_argument('-dpi', action='store', type=int, default=300,
+                            help='Dpi of the saved image (default=300).')
+    parser_eig.add_argument('-oc', '--output_corr', action='store', type=str,
+                            const='eig_corr.png', nargs='?',
+                            help='Calculate the correlation between a pair of'
+                            ' coefficients of the l-th and m-th unperturbed '
+                            'states (provided by -first and -last) of the i-th '
+                            'perturbed state (-state). Choose the preferred file '
+                            'extention (default=eig_corr.png).')
+    parser_eig.add_argument('-ot', '--output_tot', action='store', type=str,
+                            const='eig_corr_tot.png', nargs='?',
+                            help='Calculate the correlation between all '
+                            'the pairs of coefficients of the l-th and m-th '
+                            'unperturbed states of the i-th perturbed state '
+                            '(provided by -state). Choose the preferred file '
+                            'extention (default=eig_corr_tot.png).')
+    parser_eig.add_argument('-oh', '--output_hist', action='store', type=str,
+                            const='eig_hist.png', nargs='?',
+                            help='Calculate the mean coefficients with each '
+                            'unperturbed state contributes to each perturbed '
+                            'state. Choose the preferred file extention '
+                            '(default=eig_hist.png).')
+
     cmdline = parser.parse_args()
 
     if cmdline.command == 'run_pmm':
         start = timer()
 
-        logging.basicConfig(#filename='output.log', filemode='w',
-                            format='%(message)s',
+        logging.basicConfig(format='%(message)s',
                             level=logging.INFO)
         logging.info('==========================================================================\n'
                      '|    PyMM: A computational package for PMM-MD simulations in Python.     |\n'
@@ -160,5 +200,20 @@ def main():
         with open(cmdline.output, 'w') as file_out:
             file_out.write('Free Energy\n')
             file_out.write(f'{dA} J/mol')
+
+    elif cmdline.command == 'eig':
+
+        eig = np.load(cmdline.input)
+
+        print(eig.shape)
+        if cmdline.output_corr is not None:
+            eig_corr(eig, cmdline.first, cmdline.last, cmdline.state,
+                     cmdline.output_corr, cmdline.dpi)
+        if cmdline.output_tot is not None:
+            eig_corr_tot(eig, cmdline.state, cmdline.output_tot,
+                         cmdline.dpi)
+        if cmdline.output_hist is not None:
+            eig_hist(eig, cmdline.last, cmdline.output_hist,
+                     cmdline.dpi)
     
     return 0
