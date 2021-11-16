@@ -1,3 +1,4 @@
+from pymm.conversions import au2eV
 from pymm.eigvecs import get_ext, eig_corr, eig_corr_tot, eig_hist
 from pymm.inputs import read_raw_matrix
 from pymm.pmm import pmm
@@ -73,8 +74,8 @@ def main():
                             default='pymm_eigvecs.npy', help='Perturbed '
                             'eigenvectors trajectory (default: pymm_eigvecs.npy)')
     parser_abs.add_argument('-sigma', action='store', type=float,
-                            default=0.0003, help='Sigma value of the gaussian '
-                            'broadening of the signal (expressed as frequency)')
+                            default=0.05, help='Sigma value of the gaussian '
+                            'broadening of the signal (expressed as frequency in eV)')
     parser_abs.add_argument('-xtr', '--extra-range', action='store', type=float,
                             default=0.005, help='Additional value to add to the'
                             'frequency range considered for the spectrum '
@@ -198,16 +199,22 @@ def main():
                      '|                                                                        |\n'
                      '==========================================================================\n')
 
+        # Change matplotlib settings:
+        plt.rcParams['axes.linewidth'] = 1.3
+        plt.rcParams['font.size'] = 18
+        plt.rcParams['legend.fontsize'] = 15
+
         dip_matrix = read_raw_matrix(cmdline.dip_matrix)
         eigvals = np.loadtxt(cmdline.eigvals)
         eigvecs = np.load(cmdline.eigvecs)
         pert_matrix = calc_pert_matrix(dip_matrix, eigvecs)
-    
+
         logging.info(' * Number of frames = {}'.format(eigvals.shape[0]))
         logging.info(' * Number of transitions = {}'.format(eigvals.shape[1] - 1))
-        logging.info(' * sigma = {} (frequency in a.u.).')
+        logging.info(f' * sigma = {cmdline.sigma} eV.')
 
-        calc_abs(eigvals, pert_matrix, cmdline.output, cmdline.sigma, cmdline.extra_range)
+        calc_abs(eigvals, pert_matrix, cmdline.output, cmdline.sigma / (2*np.pi*au2eV),
+                 cmdline.extra_range)
     
         logging.info('\n'
                  '==========================================================================\n'

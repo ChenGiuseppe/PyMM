@@ -49,6 +49,7 @@ def eig_corr(eig, l, m, state, save_fn, dpi, bins):
 
     ext = get_ext(save_fn)
     plt.savefig(save_fn[:-4] + '.' + ext, dpi=dpi, format=ext)
+    logging.info('\n * Correlation plot saved as {}.\n'.format(save_fn[:-4] + '.' + ext))
 
     plt.show()
 
@@ -82,7 +83,9 @@ def eig_corr_tot(eig, state, save_fn, dpi, bins):
     plt.tight_layout()
 
     plt.savefig(save_fn[:-4] + '.' + ext, dpi=dpi, format=ext)
-    
+    logging.info('\n * Correlation plot between all states'
+                 ' saved as {}.\n'.format(save_fn[:-4] + '.' + ext))
+
     plt.show()
 
 def eig_hist(eig, n_states, save_fn, dpi):
@@ -123,6 +126,8 @@ def eig_hist(eig, n_states, save_fn, dpi):
 
     ext = get_ext(save_fn)
     plt.savefig(save_fn[:-4] + '.' + ext, dpi=dpi, format=ext)
+    logging.info('\n * Cumulative histogram'
+                 ' saved as {}.\n'.format(save_fn[:-4] + '.' + ext))
 
     plt.show()
 

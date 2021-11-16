@@ -43,7 +43,9 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
     exc_ens = (energies[:, 1:] - np.expand_dims(energies[:, 0], axis=1)) / (2
               * np.pi)
     mu_squareds = (pert_matrix[:, 0, 1:, :]**2).sum(axis=2)
+
     n_frames = energies.shape[0]
+    n_states = energies.shape[1]
     # histos = []
 
     vmin = exc_ens.min() - extra_range
@@ -68,29 +70,35 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
                 spectrum_tmp += bin_centers * intensity *\
                                 np.exp(-(bin_centers - bin_centers[j]) ** 2
                                        / (2 * sigma ** 2))
-        spectra.append(spectrum_tmp * np.sqrt(2*np.pi) / (137 * sigma))
+        spectra.append(spectrum_tmp * np.sqrt(2*np.pi) / (137 * sigma) 
+                       * 16863 / 2.3)
 
     spectra = np.array(spectra)
     tot_spectrum = np.sum(spectra, axis=0)
     lambdas = 137 * 0.0529 / bin_centers
     tot_spectrum = np.vstack((lambdas, tot_spectrum)).transpose((1,0))
     spectra = np.vstack((lambdas, spectra)).transpose((1,0))
-    np.savetxt(f'{output_fn}_tot.dat', tot_spectrum)
-    np.savetxt(f'{output_fn}_transitions.dat', spectra)
+    np.savetxt(f'{output_fn}_tot.dat', tot_spectrum, header=f'sigma = {sigma} a.u.\n'
+               'wavelength (nm); eps (a.u.)')
+    np.savetxt(f'{output_fn}_transitions.dat', spectra, header=f'sigma = {sigma} a.u.\n'
+               'wavelength (nm); eps ' + '(a.u.); eps'.join([str(i) for i in range(1, n_states)]) +
+               ' (a.u.)')
 
     logging.info(' * The total UV-Vis spectrum has been saved as {}'.format(f'{output_fn}_tot.dat'))
     logging.info(' * All the transitions considered on their own have been saved'
                  ' as {}'.format(f'{output_fn}_transitions.dat'))
 
     for i in range(1, spectra.shape[1]):
-        ax.plot(lambdas, spectra[:, i] * 16863 / 2.3, label=r'0 $\longrightarrow$ {}'.format(i))
-    ax.plot(lambdas, tot_spectrum[:, 1] * 16863 / 2.3, color='k',
+        ax.plot(lambdas, spectra[:, i], label=r'0 $\longrightarrow$ {}'.format(i))
+    ax.plot(lambdas, tot_spectrum[:, 1], color='k',
             linestyle='--', label='Total spectrum')
 
     ax.set_xlabel('wavelength (nm)')
     ax.set_ylabel('$\epsilon$ (M$^{-1}$cm$^{-1}$)')
 
     ax.legend(frameon=False)
+
+    plt.tight_layout()
 
     plt.show()
 
