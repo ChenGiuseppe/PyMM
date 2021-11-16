@@ -66,7 +66,7 @@ def main():
     parser_abs.add_argument('-el', '--eigvals', action='store', type=str,
                             default='pymm_eigvals.dat', help='Perturbed '
                             'eigenvalues trajectory (default: pymm_eigvals.dat)')
-    parser_abs.add_argument('-ec', '--eigvecs', action='store', type=str,
+    parser_abs.add_argument('-ev', '--eigvecs', action='store', type=str,
                             default='pymm_eigvecs.npy', help='Perturbed '
                             'eigenvectors trajectory (default: pymm_eigvecs.npy)')
     parser_abs.add_argument('-sigma', action='store', type=float,
@@ -147,18 +147,19 @@ def main():
 
     cmdline = parser.parse_args()
 
+    logging.basicConfig(format='%(message)s',
+                        level=logging.INFO)
+    logging.info('==========================================================================\n'
+                 '|    PyMM: A computational package for PMM-MD simulations in Python.     |\n'
+                 '==========================================================================\n\n'
+                 'User: {}\n'.format(getpass.getuser()) +
+                 'Date: {}'.format(datetime.today().strftime('%Y-%m-%d-%H:%M:%S')))
+    logging.info('\nJob launched:')
+    logging.info('{}\n\n\n'.format(' '.join(sys.argv)))
+
     if cmdline.command == 'run_pmm':
         start = timer()
 
-        logging.basicConfig(format='%(message)s',
-                            level=logging.INFO)
-        logging.info('==========================================================================\n'
-                     '|    PyMM: A computational package for PMM-MD simulations in Python.     |\n'
-                     '==========================================================================\n\n'
-                     'User: {}\n'.format(getpass.getuser()) +
-                     'Date: {}'.format(datetime.today().strftime('%Y-%m-%d-%H:%M:%S')))
-        logging.info('\nJob launched:')
-        logging.info('{}\n\n\n'.format(' '.join(sys.argv)))
         logging.info('==========================================================================\n'
                      '|                                                                        |\n'
                      '|                  Launching PMM-MD calculation:                         |\n'
@@ -183,37 +184,120 @@ def main():
                      '--------------------------------------------------------------------------\n')
 
     elif cmdline.command == 'calc_abs':
+
+        logging.info('==========================================================================\n'
+                     '|                                                                        |\n'
+                     '|                     Calculate UV-Vis spectrum:                         |\n'
+                     '|                                                                        |\n'
+                     '==========================================================================\n')
+
         dip_matrix = read_raw_matrix(cmdline.dip_matrix)
         eigvals = np.loadtxt(cmdline.eigvals)
         eigvecs = np.load(cmdline.eigvecs)
         pert_matrix = calc_pert_matrix(dip_matrix, eigvecs)
+    
+        logging.info(' * Number of frames = {}'.format(eigvals.shape[0]))
+        logging.info(' * Number of transitions = {}'.format(eigvals.shape[1] - 1))
+        logging.info(' * sigma = {} (frequency in a.u.).')
+
         calc_abs(eigvals, pert_matrix, cmdline.output, cmdline.sigma, cmdline.extra_range)
+    
+        logging.info('\n'
+                 '==========================================================================\n'
+                 '|                                                                        |\n'
+                 '|                                 FINISHED                               |\n'
+                 '|                                                                        |\n'
+                 '==========================================================================\n'
+                 '\n'
+                 'Date: {}.'.format(datetime.today().strftime('%Y-%m-%d-%H:%M:%S')) + 
+                 '\n\n'
+                 '--------------------------------------------------------------------------\n')
 
     elif cmdline.command == 'free_en':
+
+        logging.info('==========================================================================\n'
+                     '|                                                                        |\n'
+                     '|                     Calculate Free Energy:                             |\n'
+                     '|                                                                        |\n'
+                     '==========================================================================\n')
+
         col = 0
         en_in_in = np.loadtxt(cmdline.en_in_in)[:,col]
         en_fin_in = np.loadtxt(cmdline.en_fin_in)[:,col]
         en_in_fin = np.loadtxt(cmdline.en_in_fin)[:,col]
         en_fin_fin = np.loadtxt(cmdline.en_fin_fin)[:,col]
+
+        logging.info(' * Number of frames = {}\n'.format(en_in_in.shape[0]))
+
         dA = calc_dA_mean(cmdline.temperature, en_in_in, en_fin_in,
                      en_in_fin, en_fin_fin)
-        with open(cmdline.output, 'w') as file_out:
-            file_out.write('Free Energy\n')
-            file_out.write(f'{dA} J/mol')
+
+        logging.info('================================= RESULTS ================================\n'
+                     '                     * Calculated Free Energy:\n'
+                     '                       {} J/mol\n'.format(dA) +
+                     '==========================================================================\n')
+
+        logging.info('\n'
+                     '==========================================================================\n'
+                     '|                                                                        |\n'
+                     '|                                 FINISHED                               |\n'
+                     '|                                                                        |\n'
+                     '==========================================================================\n'
+                     '\n'
+                     'Date: {}.'.format(datetime.today().strftime('%Y-%m-%d-%H:%M:%S')) + 
+                     '\n\n'
+                     '--------------------------------------------------------------------------\n')
 
     elif cmdline.command == 'eig':
 
-        eig = np.load(cmdline.input)
+        logging.info('==========================================================================\n'
+                     '|                                                                        |\n'
+                     '|                     Eigenvectors Analysis:                             |\n'
+                     '|                                                                        |\n'
+                     '==========================================================================\n')
 
-        print(eig.shape)
+        eigvecs = np.load(cmdline.input)
+
+        logging.info(' * Number of frames = {}'.format(eigvecs.shape[0]))
+        logging.info(' * Number of electronic states = {}\n\n'.format(eigvecs.shape[1]))
+
         if cmdline.output_corr is not None:
-            eig_corr(eig, cmdline.first, cmdline.last, cmdline.state,
+
+            logging.info(' * Correlation plot between the contributions arising from the unperturbed\n'
+                         f'   states {cmdline.first} and {cmdline.last} to the perturbed state {cmdline.state}.\n'
+                         )
+
+            eig_corr(eigvecs, cmdline.first, cmdline.last, cmdline.state,
                      cmdline.output_corr, cmdline.dpi)
         if cmdline.output_tot is not None:
-            eig_corr_tot(eig, cmdline.state, cmdline.output_tot,
+
+            logging.info(' * Correlation plot between all the pairs obtained between the contributions\n'
+                         f'   arising from the unperturbed states to the perturbed state {cmdline.state}.\n'
+                         )
+
+            eig_corr_tot(eigvecs, cmdline.state, cmdline.output_tot,
                          cmdline.dpi)
         if cmdline.output_hist is not None:
-            eig_hist(eig, cmdline.last, cmdline.output_hist,
+
+            logging.info(' * Cumulative histogram of the mean contribution arising from each \n'
+                         f'   unperturbed state to each the perturbed state.\n'
+                         )
+
+            logging.info(f' * Only the first {cmdline.state} states (including the ground state) have\n'
+                         '   been explicitly considered.\n')
+
+            eig_hist(eigvecs, cmdline.state, cmdline.output_hist,
                      cmdline.dpi)
+
+        logging.info('\n'
+                     '==========================================================================\n'
+                     '|                                                                        |\n'
+                     '|                                 FINISHED                               |\n'
+                     '|                                                                        |\n'
+                     '==========================================================================\n'
+                     '\n'
+                     'Date: {}.'.format(datetime.today().strftime('%Y-%m-%d-%H:%M:%S')) + 
+                     '\n\n'
+                     '--------------------------------------------------------------------------\n')
     
     return 0

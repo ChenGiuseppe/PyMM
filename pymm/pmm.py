@@ -516,6 +516,7 @@ def pmm(cmdline):
 
     xyz_fn = '{}_qc_geom.xyz'.format(cmdline.output)
     write_geom(xyz_fn, qc.geom)
+
     logging.info('==========================================================================\n'
                  '|                                                                        |\n'
                  '|                               OUTPUT                                   |\n'

@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -35,7 +36,7 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
     Returns:
     '''
 
-    mpl.style.use('seaborn-colorblind')
+    plt.style.use('seaborn-colorblind')
 
     fig, ax = plt.subplots(1, 1, figsize=(8,5))
 
@@ -68,6 +69,7 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
                                 np.exp(-(bin_centers - bin_centers[j]) ** 2
                                        / (2 * sigma ** 2))
         spectra.append(spectrum_tmp * np.sqrt(2*np.pi) / (137 * sigma))
+
     spectra = np.array(spectra)
     tot_spectrum = np.sum(spectra, axis=0)
     lambdas = 137 * 0.0529 / bin_centers
@@ -75,6 +77,11 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
     spectra = np.vstack((lambdas, spectra)).transpose((1,0))
     np.savetxt(f'{output_fn}_tot.dat', tot_spectrum)
     np.savetxt(f'{output_fn}_transitions.dat', spectra)
+
+    logging.info(' * The total UV-Vis spectrum has been saved as {}'.format(f'{output_fn}_tot.dat'))
+    logging.info(' * All the transitions considered on their own have been saved'
+                 ' as {}'.format(f'{output_fn}_transitions.dat'))
+
     for i in range(1, spectra.shape[1]):
         ax.plot(lambdas, spectra[:, i] * 16863 / 2.3, label=r'0 $\longrightarrow$ {}'.format(i))
     ax.plot(lambdas, tot_spectrum[:, 1] * 16863 / 2.3, color='k',

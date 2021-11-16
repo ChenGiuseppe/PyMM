@@ -77,7 +77,7 @@ def eig_hist(eig, n_states, save_fn, dpi):
         n_states = tot_states
 
     ys = [[] for i in range(n_states)]
-    x = [i+1 for i in range(n_states)]
+    # x = [i+1 for i in range(n_states)]
 
     for i in range(n_states):
         for j in range(n_states):
@@ -88,7 +88,7 @@ def eig_hist(eig, n_states, save_fn, dpi):
             other_sum += (eig[:,j,i]**2).mean()
         ys[i].append(other_sum)
     ys = np.array(ys)
-    df = pd.DataFrame(ys, columns=['ground state'] + [str(i) for i in range(1,n_states)] + ['>{}'.format(n_states)])
+    df = pd.DataFrame(ys, columns=['ground state'] + [str(i) for i in range(1,n_states)] + ['>{}'.format(n_states - 1)])
     df.plot(ax=ax, kind='bar', stacked=True, legend=False)
 
     ax.set_ylabel('$(c_l^i)^2$')
