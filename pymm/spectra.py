@@ -79,10 +79,10 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
     tot_spectrum = np.vstack((lambdas, tot_spectrum)).transpose((1,0))
     spectra = np.vstack((lambdas, spectra)).transpose((1,0))
     np.savetxt(f'{output_fn}_tot.dat', tot_spectrum, header=f'sigma = {sigma} a.u.\n'
-               'wavelength (nm); eps (a.u.)')
+               'wavelength (nm); eps (M^-1 cm^-1)')
     np.savetxt(f'{output_fn}_transitions.dat', spectra, header=f'sigma = {sigma} a.u.\n'
-               'wavelength (nm); eps ' + '(a.u.); eps'.join([str(i) for i in range(1, n_states)]) +
-               ' (a.u.)')
+               'wavelength (nm); eps' + '; eps'.join([str(i) for i in range(1, n_states)]) +
+               ' (M^-1 cm^-1)')
 
     logging.info(' * The total UV-Vis spectrum has been saved as {}'.format(f'{output_fn}_tot.dat'))
     logging.info(' * All the transitions considered on their own have been saved'
