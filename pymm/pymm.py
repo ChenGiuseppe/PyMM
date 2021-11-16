@@ -236,15 +236,49 @@ def main():
                      '==========================================================================\n')
 
         col = 0
-        en_in_in = np.loadtxt(cmdline.en_in_in)[:,col]
-        en_fin_in = np.loadtxt(cmdline.en_fin_in)[:,col]
-        en_in_fin = np.loadtxt(cmdline.en_in_fin)[:,col]
-        en_fin_fin = np.loadtxt(cmdline.en_fin_fin)[:,col]
+
+        if cmdline.en_in_in and cmdline.en_fin_in and cmdline.en_in_fin and cmdline.en_fin_fin:
+
+            logging.info(' * Free energy will be calculated considering two '
+                         'ensembles.')
+            en_in_in = np.loadtxt(cmdline.en_in_in)[:,col]
+            en_fin_in = np.loadtxt(cmdline.en_fin_in)[:,col]
+            en_in_fin = np.loadtxt(cmdline.en_in_fin)[:,col]
+            en_fin_fin = np.loadtxt(cmdline.en_fin_fin)[:,col]
+
+            dA = calc_dA_mean(cmdline.temperature, en_in_in, en_fin_in,
+                              en_in_fin, en_fin_fin)
+
+        elif (cmdline.en_in_in and cmdline.en_fin_in) and not cmdline.en_in_fin and not cmdline.en_fin_fin:
+
+            logging.info(' * Free energy will be calculated considering only the '
+                         'ensemble in the initial state.')
+            logging.warning(' ! For a more rigorous estimation of the free energy '
+                            'consider using both the initial and final ensembles '
+                            '(see the documentation).')
+            en_in_in = np.loadtxt(cmdline.en_in_in)[:,col]
+            en_fin_in = np.loadtxt(cmdline.en_fin_in)[:,col]
+
+            dA = calc_dA(cmdline.temperature, en_in_in, en_fin_in, state='ini')
+
+        elif not cmdline.en_in_in and not cmdline.en_fin_in and (cmdline.en_in_fin and cmdline.en_fin_fin):
+
+            logging.info(' * Free energy will be calculated considering only the '
+                         'ensemble in the final state.')
+            logging.warning(' ! For a more rigorous estimation of the free energy '
+                            'consider using both the initial and final ensembles '
+                            '(see the documentation).')
+            en_in_fin = np.loadtxt(cmdline.en_in_fin)[:,col]
+            en_fin_fin = np.loadtxt(cmdline.en_fin_fin)[:,col]
+
+            dA = calc_dA(cmdline.temperature, en_in_fin, en_fin_fin, state='ini')
+
+        else:
+            raise IOError('Input files provided incorrectly. See documentation.')
 
         logging.info(' * Number of frames = {}\n'.format(en_in_in.shape[0]))
 
-        dA = calc_dA_mean(cmdline.temperature, en_in_in, en_fin_in,
-                     en_in_fin, en_fin_fin)
+
 
         logging.info('================================= RESULTS ================================\n'
                      '                     * Calculated Free Energy:\n'
