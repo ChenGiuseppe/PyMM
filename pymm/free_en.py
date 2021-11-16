@@ -27,12 +27,24 @@ def calc_dA(T, en_ini, en_fin, state):
 
     return dA
 
-def calc_dA_mean(T, en_ini_ens_ini, en_fin_ens_ini, en_ini_ens_fin, en_fin_ens_fin):
 
-    dA_ini = calc_dA(T, en_ini_ens_ini, en_fin_ens_ini, state = 'ini')
-    dA_fin = calc_dA(T, en_ini_ens_fin, en_fin_ens_fin, state = 'fin')
+def calc_dA_mean(T, en_ini_ens_ini, en_fin_ens_ini, en_ini_ens_fin, en_fin_ens_fin, nens):
+    '''
+    This function calls calc_dA in order to calculate
+    the Free Energy difference in one or two ensemble.
+    The variable nens controls the number of ensemble used. 
+    '''
+    
+    if nens == 1:  
+        dA_ini = calc_dA(T, en_ini_ens_ini, en_fin_ens_ini, state = 'ini')
 
-    dA_mean = 0.5*(dA_ini + dA_fin)
+        dA_mean = dA_ini
+
+    if nens == 2:
+        dA_ini = calc_dA(T, en_ini_ens_ini, en_fin_ens_ini, state = 'ini')
+        dA_fin = calc_dA(T, en_ini_ens_fin, en_fin_ens_fin, state = 'fin')
+
+        dA_mean = 0.5*(dA_ini + dA_fin)
 
     return dA_mean
 
