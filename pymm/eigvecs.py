@@ -20,57 +20,79 @@ def get_ext(filename):
     except:
         logging.info('File extention was not recognized. Falling back to png.')
         ext = 'png'
+
     return ext
 
-def eig_corr(eig, l, m, state, save_fn, dpi):
+def eig_corr(eig, l, m, state, save_fn, dpi, bins):
     '''
     '''
 
-    plt.style.use('seaborn-colorblind')
     fig, ax = plt.subplots(1, 1)
 
-    df = pd.DataFrame(eig[:,:,state], columns = [str(i) for i in range(eig.shape[1])])
+    df = pd.DataFrame(eig[:,:,state], columns = ['Unperturbed state {}'.format(i) for i in range(eig.shape[1])])
 
-    sns.histplot(df, x=str(l), y=str(m), bins=30, cmap='viridis')
+    sns.histplot(df, x='Unperturbed state {}'.format(l),
+                 y='Unperturbed state {}'.format(m), bins=bins, cmap='viridis',
+                 ax=ax, cbar=True, cbar_kws={'label': 'Number of frames'})
+
+    # cb = fig.colorbar(cset, ax=axs.ravel().tolist(), fraction=0.05)
+
+    ax.set_title('Perturbed state {}'.format(state))
+
+    ax.set_xlabel = r'$c_{{}}^{{}}$'.format(l, state)
+    ax.set_ylabel = r'$c_{{}}^{{}}$'.format(m, state)
+
+    ax.set_xlim(-1, 1)
+    ax.set_ylim(-1, 1)
+
+    plt.tight_layout()
 
     ext = get_ext(save_fn)
     plt.savefig(save_fn[:-4] + '.' + ext, dpi=dpi, format=ext)
 
     plt.show()
 
-def eig_corr_tot(eig, state, save_fn, dpi):
+def eig_corr_tot(eig, state, save_fn, dpi, bins):
     '''
     '''
 
-    plt.style.use('seaborn-colorblind')
+    plt.rcParams['font.size'] = 22
+    plt.rcParams['legend.fontsize'] = 20
+    plt.rcParams['axes.linewidth'] = 1.5
 
-    df = pd.DataFrame(eig[:,:,state], columns = [str(i) for i in range(eig.shape[1])])
-    g = sns.PairGrid(df)
+
+    df = pd.DataFrame(eig[:,:,state], columns = ['state {}'.format(i) for i in range(eig.shape[1])])
+    g = sns.PairGrid(df, despine=False)
     g.map_diag(sns.kdeplot,
                color='k'
                )
     g.map_offdiag(sns.histplot,
-                  bins=30,
+                  bins=bins,
                   #sns.kdeplot,
                   #fill=True,
-                  cmap='viridis',
-                  #sns.scatterplot,
-                  #s=0.5
+                  cmap='viridis'
                   )
 
+    g.set(xlim=[-1,1], ylim=[-1,1])
+    g.fig.subplots_adjust(top=0.95)
+    g.fig.suptitle('Perturbed state {}'.format(state))
+
     ext = get_ext(save_fn)
+
+    plt.tight_layout()
+
     plt.savefig(save_fn[:-4] + '.' + ext, dpi=dpi, format=ext)
     
     plt.show()
-
-
 
 def eig_hist(eig, n_states, save_fn, dpi):
     '''
     '''
 
     plt.style.use('seaborn-colorblind')
-    fig, ax = plt.subplots(1, 1)
+
+    xsize =  6 + n_states*0.7
+    fig, ax = plt.subplots(1, 1, figsize=(xsize, 7))
 
     tot_states = eig.shape[1]
     if not n_states:
@@ -91,7 +113,7 @@ def eig_hist(eig, n_states, save_fn, dpi):
     df = pd.DataFrame(ys, columns=['ground state'] + [str(i) for i in range(1,n_states)] + ['>{}'.format(n_states - 1)])
     df.plot(ax=ax, kind='bar', stacked=True, legend=False)
 
-    ax.set_ylabel('$(c_l^i)^2$')
+    ax.set_ylabel('${(c_l^i)}^2$')
 
     ax.legend(title="$l$-th Unperturbed state", frameon=False, bbox_to_anchor=(1.05, 1), loc='upper left')
     ax.set_xlabel("$i$-th Perturbed state")

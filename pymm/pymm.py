@@ -10,6 +10,9 @@ import sys
 from timeit import default_timer as timer
 from argparse import ArgumentParser, FileType
 import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
 
 def main():
     '''Program with CLI to perform MD-PMM calculations.
@@ -18,10 +21,10 @@ def main():
     parser = ArgumentParser(prog='PyMM',
                             description='Perform MD-PMM calculation.')
     subparsers = parser.add_subparsers(dest='command')
+
     # Perform MD-PMM calculation.
     parser_pmm = subparsers.add_parser('run_pmm',
                                        help='Perform MD-PMM calculation.')
-    # Get the QC QM properties from text files.
     parser_pmm.add_argument('-g', '--ref-geom', action='store', type=str,
                         help='QC reference (QM) geometry filename')
     parser_pmm.add_argument('-gu', '--geom-units', choices=['angstrom', 'bohr',
@@ -80,6 +83,7 @@ def main():
                             default='abs_spectrum',
                             help='Calculated absorption spectra names'
                             '(default: abs_spectrum)')
+
     # Calculate free energy
     parser_dA = subparsers.add_parser('free_en',
                                      help='Calculate free energy')
@@ -124,6 +128,9 @@ def main():
                             help='Perturbed state to consider.')
     parser_eig.add_argument('-dpi', action='store', type=int, default=300,
                             help='Dpi of the saved image (default=300).')
+    parser_eig.add_argument('-bins', action='store', type=int, default=20,
+                            help='Number of bins used to calculate '
+                            'the histograms (default=20).')
     parser_eig.add_argument('-oc', '--output_corr', action='store', type=str,
                             const='eig_corr.png', nargs='?',
                             help='Calculate the correlation between a pair of'
@@ -140,7 +147,7 @@ def main():
                             'extention (default=eig_corr_tot.png).')
     parser_eig.add_argument('-oh', '--output_hist', action='store', type=str,
                             const='eig_hist.png', nargs='?',
-                            help='Calculate the mean coefficients with each '
+                            help='Calculate the squared mean coefficients with each '
                             'unperturbed state contributes to each perturbed '
                             'state. Choose the preferred file extention '
                             '(default=eig_hist.png).')
@@ -261,6 +268,11 @@ def main():
         logging.info(' * Number of frames = {}'.format(eigvecs.shape[0]))
         logging.info(' * Number of electronic states = {}\n\n'.format(eigvecs.shape[1]))
 
+        # Change matplotlib settings:
+        plt.rcParams['axes.linewidth'] = 1.3
+        plt.rcParams['font.size'] = 18
+        plt.rcParams['legend.fontsize'] = 15
+
         if cmdline.output_corr is not None:
 
             logging.info(' * Correlation plot between the contributions arising from the unperturbed\n'
@@ -268,7 +280,7 @@ def main():
                          )
 
             eig_corr(eigvecs, cmdline.first, cmdline.last, cmdline.state,
-                     cmdline.output_corr, cmdline.dpi)
+                     cmdline.output_corr, cmdline.dpi, cmdline.bins)
         if cmdline.output_tot is not None:
 
             logging.info(' * Correlation plot between all the pairs obtained between the contributions\n'
@@ -276,7 +288,7 @@ def main():
                          )
 
             eig_corr_tot(eigvecs, cmdline.state, cmdline.output_tot,
-                         cmdline.dpi)
+                         cmdline.dpi, cmdline.bins)
         if cmdline.output_hist is not None:
 
             logging.info(' * Cumulative histogram of the mean contribution arising from each \n'
