@@ -467,7 +467,7 @@ def pmm(cmdline):
     logging.info(' * Total number of atoms: {}\n'.format(mm_traj.atoms.n_atoms) +
                  ' * Number of frames in the trajectory: {}\n'.format(mm_traj.trajectory.n_frames) +
                  ' * QC atoms indeces in the total system (starting from 1):\n' +
-                 ' '.join([str(i + 1) for i in qc_ref.atoms.indices]) +
+                 ' '.join([str(i + 1) for i in qc_traj.atoms.indices]) +
                  '\n\n--------------------------------------------------------------------------\n')
 
     # MD-PMM calculation.
