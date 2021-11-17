@@ -246,8 +246,19 @@ def main():
             en_in_fin = np.loadtxt(cmdline.en_in_fin)[:,col]
             en_fin_fin = np.loadtxt(cmdline.en_fin_fin)[:,col]
 
-            dA = calc_dA_mean(cmdline.temperature, en_in_in, en_fin_in,
-                              en_in_fin, en_fin_fin)
+            if en_in_in.shape[0] == en_in_fin.shape[0] == en_fin_in.shape[0] == en_fin_fin.shape[0]:
+
+                logging.info(' * Number of frames = {}\n'.format(en_in_in.shape[0]))
+                dA = calc_dA_mean(cmdline.temperature, en_in_in, en_fin_in,
+                                  en_in_fin, en_fin_fin)
+
+            else:
+                logging.error(' ! The trajectories are not of the same length\n'
+                              f'   * eii: {en_in_in.shape[0]} \n'
+                              f'   * efi: {en_fin_in.shape[0]} \n'
+                              f'   * eif: {en_in_fin.shape[0]} \n'
+                              f'   * eff: {en_fin_fin.shape[0]} \n\n')
+                raise IOError
 
         elif (cmdline.en_in_in and cmdline.en_fin_in) and not cmdline.en_in_fin and not cmdline.en_fin_fin:
 
@@ -259,7 +270,16 @@ def main():
             en_in_in = np.loadtxt(cmdline.en_in_in)[:,col]
             en_fin_in = np.loadtxt(cmdline.en_fin_in)[:,col]
 
-            dA = calc_dA(cmdline.temperature, en_in_in, en_fin_in, state='ini')
+            if en_in_in.shape[0] == en_fin_in.shape[0]:
+
+                logging.info(' * Number of frames = {}\n'.format(en_in_in.shape[0]))
+                dA = calc_dA(cmdline.temperature, en_in_in, en_fin_in, state='ini')
+
+            else:
+                logging.error(' ! The trajectories are not of the same length\n'
+                              f'   * eii: {en_in_in.shape[0]} \n'
+                              f'   * efi: {en_fin_in.shape[0]} \n\n')
+                raise IOError
 
         elif not cmdline.en_in_in and not cmdline.en_fin_in and (cmdline.en_in_fin and cmdline.en_fin_fin):
 
@@ -268,17 +288,23 @@ def main():
             logging.warning(' ! For a more rigorous estimation of the free energy '
                             'consider using both the initial and final ensembles '
                             '(see the documentation).')
+
             en_in_fin = np.loadtxt(cmdline.en_in_fin)[:,col]
             en_fin_fin = np.loadtxt(cmdline.en_fin_fin)[:,col]
 
-            dA = calc_dA(cmdline.temperature, en_in_fin, en_fin_fin, state='ini')
+            if en_in_fin.shape[0] == en_fin_fin.shape[0]:
+
+                logging.info(' * Number of frames = {}\n'.format(en_in_fin.shape[0]))
+                dA = calc_dA(cmdline.temperature, en_in_fin, en_fin_fin, state='ini')
+    
+            else:
+                logging.error(' ! The trajectories are not of the same length\n'
+                              f'   * eii: {en_in_fin.shape[0]} \n'
+                              f'   * efi: {en_fin_fin.shape[0]} \n\n')
+                raise IOError
 
         else:
             raise IOError('Input files provided incorrectly. See documentation.')
-
-        logging.info(' * Number of frames = {}\n'.format(en_in_in.shape[0]))
-
-
 
         logging.info('================================= RESULTS ================================\n'
                      '                     * Calculated Free Energy:\n'
