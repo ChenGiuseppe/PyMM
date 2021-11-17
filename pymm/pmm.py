@@ -42,6 +42,30 @@ def convert2Universe(geometry: np.ndarray) -> mda.Universe:
     # print(univ_geom.atoms.positions, univ_geom.atoms.masses)
     return univ_geom
 
+def bynum2indexes(qc_indexes: str) -> list:
+    '''Convert the formatted indeces provided by the command line
+    into an list of int to perform a selection in np.ndarray.
+
+    Parameters:
+        qc_indexes (str): formatted indeces to be translated into
+            a form readable by bynum.
+
+    Returns:
+        new_indexes (list): converted indeces for np.ndarray.
+    '''
+
+    indexes = qc_indexes.split()
+    new_indexes = []
+    for i in indexes:
+        try:
+            new_indexes.append(int(i) - 1)
+        except:
+            indexes_tmp = i.split(':')
+            new_indexes = new_indexes + [j for j in range(int(indexes_tmp[0])
+                                          - 1, int(indexes_tmp[1]))]
+
+    return new_indexes
+
 
 def split_qc_solv(traj: mda.Universe,
                   qc_indexes: str) -> mda.core.groups.AtomGroup:
@@ -66,7 +90,11 @@ def split_qc_solv(traj: mda.Universe,
     #print(new_qc_indexes)
     qc = traj.select_atoms(f'bynum {new_qc_indexes}')
     #print(qc)
-    solv = traj.select_atoms(f'not bynum {new_qc_indexes}')
+
+    new2_qc_indexes = ' and not bynum '.join(qc_indexes.split())
+    solv = traj.select_atoms(f'not bynum {new2_qc_indexes}')
+    print(qc, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    print(solv, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     return qc, solv
 
 
@@ -314,8 +342,13 @@ def calc_el_field_pot_atom(solv_coor: np.ndarray, solv_charges: np.ndarray,
 
     potential = np.zeros(qc_charges.shape[0])
     qc_distances = np.zeros((qc_coor.shape[0], solv_coor.shape[0]))
+
     for i in prange(qc_coor.shape[0]):
         qc_xyz_distances = (qc_coor[i] - solv_coor) / Bohr2Ang
+        ##with open('distances.txt', 'a') as f:
+        ##    f.write('\n')
+        ##    np.savetxt(f, qc_xyz_distances[:10,:])
+
         # qc_distances[i, :] = np.sqrt(np.einsum('ij,ij->i', qc_xyz_distances,
         #                                 qc_xyz_distances))
         qc_distances[i, :] = np.sqrt((qc_xyz_distances**2).sum(axis=1))
@@ -393,16 +426,41 @@ def pmm(cmdline):
 
     # print(qm_inputs['geometry'])
     # print(qm_inputs)
-    qc_ref = convert2Universe(qc.geom)
+    ## qc_ref = convert2Universe(qc.geom)
+
     # cut only the portion of interest of the QC.
     if cmdline.qm_indexes:
-        qc_ref = cut_qc(qc_ref, cmdline.qm_indexes)
+        #qc_ref = cut_qc(qc_ref, cmdline.qm_indexes)
+
+        new_indexes = bynum2indexes(cmdline.qm_indexes)
+        logging.info(' * Slice the reference QC in the following way:\n' +
+                     ' '.join([str(i) for i in new_indexes]) + '\n')
+        # complementary indexes
+        tot_indexes = [i for i in range(qc.charges.shape[1])]
+        comp_indexes = []
+        for i in tot_indexes:
+            if i not in new_indexes:
+                comp_indexes.append(i)
+        qc.geom = qc.geom[new_indexes, :]
+
+        exc_charge = qc.charges[:,comp_indexes].sum(axis=1)
+        logging.info(f' * The excess charge after the slicing of the QC is:\n' +
+                      ' a.u..\n'.join([str(i) for i in exc_charge]) + ' a.u.\n')
+
+        print(qc.geom.shape[0], qc.charges.shape[1])
+        qc.charges = qc.charges[:, new_indexes]
+        qc.charges = qc.charges + (exc_charge/qc.geom.shape[0])[:,None]
+
+    qc_ref = convert2Universe(qc.geom)
+
     # shift the origin to the center of mass.
     qc_ref.atoms.positions -= qc_ref.atoms.center_of_mass()
 
     # Divide the coordinates in the frame between QC and solvent.
     # NOTE: the indexes are inclusive of the extremes.
     qc_traj, solv_traj = split_qc_solv(mm_traj, cmdline.mm_indexes)
+
+    print(qc_ref.atoms, qc_traj)
 
     n_qc_atoms = qc.geom.shape[0]
     logging.info('\n\n'
@@ -534,4 +592,4 @@ def pmm(cmdline):
 
 
 if __name__ == '__main__':
-    pass
+    bynum2indexes('1 2:3')
