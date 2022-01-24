@@ -54,7 +54,7 @@ def bynum2indexes(qc_indexes: str) -> list:
         new_indexes (list): converted indeces for np.ndarray.
     '''
 
-    indexes = qc_indexes.split()
+    indexes = qc_indexes.split(',')
     new_indexes = []
     for i in indexes:
         try:
@@ -93,8 +93,8 @@ def split_qc_solv(traj: mda.Universe,
 
     new2_qc_indexes = ' and not bynum '.join(qc_indexes.split())
     solv = traj.select_atoms(f'not bynum {new2_qc_indexes}')
-    print(qc, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    print(solv, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    """ print(qc, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    print(solv, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!') """
     return qc, solv
 
 
@@ -355,14 +355,14 @@ def calc_el_field_pot_atom(solv_coor: np.ndarray, solv_charges: np.ndarray,
         for j in range(qc_charges.shape[0]):
             potential[j] += qc_charges[j, i] *\
                 (solv_charges / qc_distances[i, :]).sum() """
-    print(np.expand_dims(qc_coor, axis=1).shape, np.expand_dims(solv_coor, axis=0).shape)
+    # print(np.expand_dims(qc_coor, axis=1).shape, np.expand_dims(solv_coor, axis=0).shape)
     #qc_xyz_distances = (np.repeat(qc_coor[:,np.newaxis,:], solv_coor.shape[1], axis=1) - np.repeat(solv_coor[np.newaxis,:,:], qc_coor.shape[0], axis=0)) / Bohr2Ang
     qc_xyz_distances = (np.expand_dims(qc_coor, axis=1) - np.expand_dims(solv_coor, axis=0)) / Bohr2Ang
     qc_distances = np.sqrt((qc_xyz_distances**2).sum(axis=2))
     potential = (qc_charges * np.expand_dims((np.expand_dims(solv_charges, axis=0) / qc_distances).sum(axis=1), axis=0)).sum(axis=1)
     """ print('!potential!!!!!!!\n', i, '\n', potential)
         print('!distances!!!!!!!!!!\n',qc_distances) """
-    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n', potential)
+    # print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n', potential)
     return el_field, potential
 
 

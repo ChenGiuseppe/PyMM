@@ -29,7 +29,7 @@ def main():
     parser_pmm.add_argument('-g', '--ref-geom', action='store', type=str,
                         help='QC reference (QM) geometry filename')
     parser_pmm.add_argument('-gu', '--geom-units', choices=['angstrom', 'bohr',
-                        'nm'], help='specify units used in the reference '
+                        'nm'], help='specify units used in the reference (default: angstrom)'
                         'geometry', default='angstrom')
     parser_pmm.add_argument('-dm', '--dip-matrix', action='store', type=str,
                         help='QC unperturbed electric dipole moment matrix '
@@ -74,15 +74,15 @@ def main():
                             default='pymm_eigvecs.npy', help='Perturbed '
                             'eigenvectors trajectory (default: pymm_eigvecs.npy)')
     parser_abs.add_argument('-sigma', action='store', type=float,
-                            default=0.05, help='Sigma value of the gaussian '
-                            'broadening of the signal (expressed as frequency in eV)')
+                            default=0.05, help='Value of the gaussian '
+                            'broadening applied to the signal (expressed in eV). Default: 0.05 eV.')
     parser_abs.add_argument('-xtr', '--extra-range', action='store', type=float,
                             default=0.005, help='Additional value to add to the'
                             'frequency range considered for the spectrum '
                             'calculation')
     parser_abs.add_argument('-ot', '--output', action='store', type=str,
                             default='abs_spectrum',
-                            help='Calculated absorption spectra names'
+                            help='Calculated absorption spectra names '
                             '(default: abs_spectrum)')
 
     # Calculate free energy
@@ -148,7 +148,7 @@ def main():
                             'extention (default=eig_corr_tot.png).')
     parser_eig.add_argument('-oh', '--output_hist', action='store', type=str,
                             const='eig_hist.png', nargs='?',
-                            help='Calculate the squared mean coefficients with each '
+                            help='Calculate the mean squared coefficients with which each '
                             'unperturbed state contributes to each perturbed '
                             'state. Choose the preferred file extention '
                             '(default=eig_hist.png).')
