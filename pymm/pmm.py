@@ -302,7 +302,7 @@ def calc_el_field_pot_qc(solv_coor: np.ndarray, solv_charges: np.ndarray,
     return el_field, potential
 
 
-@njit(parallel=True)
+#@njit(parallel=True)
 def calc_el_field_pot_atom(solv_coor: np.ndarray, solv_charges: np.ndarray,
                            qc_coor: np.ndarray, cdm: np.ndarray,
                            qc_charges: np.ndarray):
@@ -343,7 +343,7 @@ def calc_el_field_pot_atom(solv_coor: np.ndarray, solv_charges: np.ndarray,
     potential = np.zeros(qc_charges.shape[0])
     qc_distances = np.zeros((qc_coor.shape[0], solv_coor.shape[0]))
 
-    for i in prange(qc_coor.shape[0]):
+    """ for i in prange(qc_coor.shape[0]):
         qc_xyz_distances = (qc_coor[i] - solv_coor) / Bohr2Ang
         ##with open('distances.txt', 'a') as f:
         ##    f.write('\n')
@@ -352,10 +352,17 @@ def calc_el_field_pot_atom(solv_coor: np.ndarray, solv_charges: np.ndarray,
         # qc_distances[i, :] = np.sqrt(np.einsum('ij,ij->i', qc_xyz_distances,
         #                                 qc_xyz_distances))
         qc_distances[i, :] = np.sqrt((qc_xyz_distances**2).sum(axis=1))
-        for j in prange(qc_charges.shape[0]):
+        for j in range(qc_charges.shape[0]):
             potential[j] += qc_charges[j, i] *\
-                (solv_charges / qc_distances[i, :]).sum()
-
+                (solv_charges / qc_distances[i, :]).sum() """
+    print(np.expand_dims(qc_coor, axis=1).shape, np.expand_dims(solv_coor, axis=0).shape)
+    #qc_xyz_distances = (np.repeat(qc_coor[:,np.newaxis,:], solv_coor.shape[1], axis=1) - np.repeat(solv_coor[np.newaxis,:,:], qc_coor.shape[0], axis=0)) / Bohr2Ang
+    qc_xyz_distances = (np.expand_dims(qc_coor, axis=1) - np.expand_dims(solv_coor, axis=0)) / Bohr2Ang
+    qc_distances = np.sqrt((qc_xyz_distances**2).sum(axis=2))
+    potential = (qc_charges * np.expand_dims((np.expand_dims(solv_charges, axis=0) / qc_distances).sum(axis=1), axis=0)).sum(axis=1)
+    """ print('!potential!!!!!!!\n', i, '\n', potential)
+        print('!distances!!!!!!!!!!\n',qc_distances) """
+    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n', potential)
     return el_field, potential
 
 
@@ -392,7 +399,15 @@ def calc_pmm_matrix(energies: np.ndarray, rot_dip_matrix: np.ndarray,
     #       el_field, rot_dip_matrix))
     if qc_ch_swith:
         pmm_matrix = - 1 * np.einsum('i,jki->jk', el_field, rot_dip_matrix)
+        """ print('Dipoles')
+        for i in range(pmm_matrix.shape[0]):
+            for j in range(pmm_matrix.shape[1]):
+                print(i, j, pmm_matrix[i,j]) """
         np.fill_diagonal(pmm_matrix, energies + potential)
+        """ print('Fill Diagonal')
+        for i in range(pmm_matrix.shape[0]):
+            for j in range(pmm_matrix.shape[1]):
+                print(i, j, pmm_matrix[i,j]) """
     else:
         pmm_matrix = np.diag(energies + potential) \
             - 1 * np.einsum('i,jki->jk', el_field, rot_dip_matrix)
@@ -539,6 +554,7 @@ def pmm(cmdline):
     # print(qc_traj.atoms.center_of_mass().dtype,
     #       solv_traj.atoms.positions.dtype)
     for i, frame in enumerate(mm_traj.trajectory):
+        # print(qc_traj.atoms.positions)
         # print(i)
         # print(solv_traj.atoms.positions)
         # cdm_qc_traj = qc_traj.atoms.center_of_mass().astype('float32')
@@ -557,6 +573,7 @@ def pmm(cmdline):
                                                        q_tot=cmdline.qc_charge)
         rot_dip_matrix, rot_matrix = rotate_dip_matrix(qc.dip_matrix,
                                                        qc_traj, qc_ref)
+        #print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', rot_matrix)
         pmm_matrix = calc_pmm_matrix(qc.energies, rot_dip_matrix,
                                      el_field, potential, qc_ch_switch)
         # print('potential', potential, '\nel field', el_field)
