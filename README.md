@@ -174,6 +174,7 @@ The cumulative histograms of the average of contribution of each unperturbed sta
 Inputs
 
 * -i: eigenvectors trajectory (eigenvecs.npy).
+* -state: select number of states to consider
 * -oh: select to calculate the cumulative histograms
 
 <br></br>
