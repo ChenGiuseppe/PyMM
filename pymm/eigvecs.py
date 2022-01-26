@@ -32,7 +32,8 @@ def eig_corr(eig, l, m, state, save_fn, dpi, bins):
     df = pd.DataFrame(eig[:,:,state], columns = ['Unperturbed state {}'.format(i) for i in range(eig.shape[1])])
 
     sns.histplot(df, x='Unperturbed state {}'.format(l),
-                 y='Unperturbed state {}'.format(m), bins=bins, cmap='flare',
+                 y='Unperturbed state {}'.format(m), bins=bins,
+                 binrange=(-1,1), cmap='flare',
                  ax=ax, cbar=True, cbar_kws={'label': 'Number of frames'})
 
     # cb = fig.colorbar(cset, ax=axs.ravel().tolist(), fraction=0.05)
@@ -69,6 +70,7 @@ def eig_corr_tot(eig, state, save_fn, dpi, bins):
                )
     g.map_offdiag(sns.histplot,
                   bins=bins,
+                  binrange=(-1,1),
                   #sns.kdeplot,
                   #fill=True,
                   cmap='flare'
