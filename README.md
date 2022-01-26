@@ -234,7 +234,7 @@ According to the inputs provided, the corresponding model will be selected. For 
 
 ## Glossary
 
-* **Quantum center** (QC): portion of the system to be described at a quantum-mechanical level.
+* **Quantum center** (QC): portion of the system described at quantum-mechanical level.
 <br></br>
 
 ## References
