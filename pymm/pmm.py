@@ -83,15 +83,15 @@ def split_qc_solv(traj: mda.Universe,
            (complementary to the QC).
 
     Example:
-        split_qc_solv(traj, "1:10 12")  # NOTE: it includes the extremes.
+        split_qc_solv(traj, 1:10,12)  # NOTE: it includes the extremes.
     '''
 
-    new_qc_indexes = ' or bynum '.join(qc_indexes.split())
+    new_qc_indexes = ' or bynum '.join(qc_indexes.split(','))
     #print(new_qc_indexes)
     qc = traj.select_atoms(f'bynum {new_qc_indexes}')
     #print(qc)
 
-    new2_qc_indexes = ' and not bynum '.join(qc_indexes.split())
+    new2_qc_indexes = ' and not bynum '.join(qc_indexes.split(','))
     solv = traj.select_atoms(f'not bynum {new2_qc_indexes}')
     """ print(qc, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     print(solv, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!') """

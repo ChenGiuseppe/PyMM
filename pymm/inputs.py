@@ -249,7 +249,9 @@ def read_pmm_inputs(cmdline):
             masses = np.zeros_like(traj_charges)
             #masses[:qc.geom.shape[0]] = qc.geom[:,0]
             mm_traj.add_TopologyAttr('masses', masses)
-            qc_traj = mm_traj.select_atoms(f'bynum {cmdline.mm_indexes}')
+            new_qc_indexes = ' or bynum '.join(cmdline.mm_indexes.split(','))
+            #qc_traj = mm_traj.select_atoms(f'bynum {cmdline.mm_indexes}')
+            qc_traj = mm_traj.select_atoms(f'bynum {new_qc_indexes}')
             qc_traj.atoms.masses = qc.geom[:,0]
         except IOError:
             logging.error('Topology file format not recognized/supported.' +
