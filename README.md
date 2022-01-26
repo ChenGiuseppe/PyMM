@@ -1,6 +1,6 @@
 # PyMM
 
-PyMM is a program that allows you to easily apply the Perturbed Matrix Method [[1]](#1) (an _a posteriori_ QM/MM method) to MD simulations (PMM-MD). In addition to the application of the method, it includes a suite of tools for:
+PyMM is a program that allows you to easily apply the Perturbed Matrix Method [[1]](#1) to MD simulations (PMM-MD). In addition to the application of the method, it includes a suite of tools for:
 - the analysis of the dynamical behaviour of the electronic states 
 - the evulation of the electronic properties during the MD trajctory
 - the prediction of experimental properties such as the absorption spectrum, the free energy and the redox potential.
