@@ -1,6 +1,9 @@
 # PyMM
 
-PyMM is a program that allows you to easily run MD-PMM [[1]](#1) (an _a posteriori_ QM/MM method) simulations. Furthermore, it includes tools for the analysis of the dynamical behaviour of the electronic states and properties during the simulation, and for the prediction of experimental properties such as the UV-Vis spectrum and the redox potential.
+PyMM is a program that allows you to easily apply the Perturbed Matrix Method [[1]](#1) (an _a posteriori_ QM/MM method) to MD simulations (PMM-MD). In addition to the application of the method, it includes a suite of tools for:
+- the analysis of the dynamical behaviour of the electronic states 
+- the evulation of the electronic properties during the MD trajctory
+- the prediction of experimental properties such as the absorption spectrum, the free energy and the redox potential.
 
 ## Installation
 
@@ -46,7 +49,7 @@ pip install .
 <br></br>
 ## Usage
 
-Before trying to launch the program, be sure that you have activated the correct environment (the one where the required libraries are installed). You can then proceed using the PyMM program.
+Before trying to launch the program, be sure that you have activated the correct environment (the one where the required libraries are installed). Then, you may proceed using the PyMM program.
 
 If you need help use:
 
@@ -70,7 +73,7 @@ to obtain info on how to use them.
 
 ### run_pmm
 
-The main feature of PyMM is to perform MD-PMM calculations. This can be done using the **run_pmm** program (arguments in "[ ]" are optional):
+The main feature of PyMM is to perform MD-PMM calculations. This is done using the **run_pmm** program (arguments in "[ ]" are optional):
 
 ```
 PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomic_charges] -traj traj.xtc -top traj.tpr -q [QC_charge] -nm 1:3 -o [eigvals.txt] -oc [eigvecs]
@@ -84,7 +87,7 @@ PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomi
 <atom symbol> <x> <y> <z> 
 ```
 
-> **NOTE**: The program also accept other types of formatting and will check and correct some common errors. This is done mainly for compatibility with legacy software.
+> **NOTE**: The program also accepts other types of file format. It will check and tries to correct some common errors. This is mainly done to assure the compatibility with common used software.
 
 * -gu : units used in the QC geometry input file (default: Angstrom).
 
@@ -106,16 +109,16 @@ PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomi
 <atom1 state1 charge> <atom2 state1 charge> ...
 <atom1 state2 charge> <atom2 state2 charge> ...
 ```
->**NOTE**: -ch is optional. When it is provided, the MD-PMM calculation will be performed by expanding the perturbation operator on each of atom of the QC [[2]](#2). If the QC atomic charges are not provided, **run_pmm** will run the calculation using the dipole approximation [[1]](#1).
+>**NOTE**: -ch is optional. When it is provided, the MD-PMM calculation will be performed by expanding the perturbation operator on each of atom of the QC [[2]](#2). If the QC atomic charges are not provided, by default **run_pmm** will run the calculation using the dipole approximation [[1]](#1).
 
-* **-traj** : XTC file containing the MD simulation trajectory.
+* **-traj** : XTC file of the MD trajectory.
 
-* **-top** : TPR file corresponding to the XTC file. It's necessary to obtain the topology and the MM charges.
+* **-top** : TPR file corresponding to the XTC file. It is necessary to obtain the topology and the MM charges.
 > **NOTE**: As an alternative, a text file listing the indexes and the charge of the atoms in the MD simulation can be used as the topology file.
 
 * -q : QC total charge. By default is 0.
 
-* **-nm** : select the atoms of the QC in the MD simulation according to the atom indexes (indexes taken from the MD simulation). Indexes start from 1. 
+* **-nm** : select the atoms of the QC in the MD simulation according to the atom indexes (atom indexes should correspond to the MD simulation). Indexes start from 1. 
 
 >**Selection Algebra**:
 >1. Use "**:**" to indicate a range.
@@ -136,8 +139,8 @@ Example 1: select atoms from 1 to 5:
 
 > **NOTE**: the selection system follows the <em>bysum index-range</em> selection mode of [MDAnalysis](https://docs.mdanalysis.org/stable/documentation_pages/selections.html), a library that PyMM relies on.
 
-* --match: reorder the QC reference geometry to match the atoms order in the MD simulation. It is useful when the geometry used for the quantum mechanical calculation doesn't match the order of the MD simulation.
-> **NOTE**: not matching the QC atoms is a common source of error.
+* --match: reorder the QC reference geometry to match the atoms order in the MD simulation. It is useful when the geometry used for the quantum mechanical calculation does not match the order of the MD simulation.
+> **NOTE**: a wrong match of the QC atoms with respect to the MD simulation is a very common source of error.
 
 #### OUTPUT
 * -o: job name that will be used as a prefix to all the output files. (Default: pymm). The programs will output: QC geometry as an xyz file, eigenvalues and eigenvectors. 
@@ -145,7 +148,7 @@ Example 1: select atoms from 1 to 5:
 <br></br>
 
 ### eig
-**eig** is a tool to analyse the perturbed electronic states corresponding eigenvectors after the MD-PMM calculation. Given the dynamic nature of these states during the simulation, a straightforward description can be difficult. Therefore we provide three graphical representations which combined can present a clearer picture to the user.
+**eig** is a tool to analyse the perturbed electronic states corresponding eigenvectors after the MD-PMM calculation. Given the dynamic nature of these states during the simulation, a straightforward description can be difficult. Therefore we provide three graphical representations which can be combined to present a clear picture of their behavior.
 
 #### **ESSENTIAL ANALYSIS**
 The contributions arising from two unperturbed states, to a selected unperturbed state, are plotted against each other.
@@ -178,7 +181,7 @@ Inputs
 * -oh: select to calculate the cumulative histograms
 
 <br></br>
-> **NOTE**: Despite its semplicity in depicting the overall trends during the simulation, considering the average contribution can be quite deceiving. This representation is preferably to be paired with an essential analysis.
+> **NOTE**: Despite its semplicity in depicting the overall trends during the simulation, considering the average contribution can be misleading. This representation is preferably paired with an essential analysis.
 
 ### calc_abs
 
@@ -224,14 +227,14 @@ Three different approaches can be adopted to the calculation of free energy in t
 2. Considering only the final ensemble: -eif and -eff need to be provided.
 3. Considering the average between the two ensembles: -eii, -efi, -eif and -eff are all necessary for the calculation.
 
-According to the inputs provided, the corresponding model will be selected. For a better comprehension of the implemented approches, please consult previously published literature [[3]] [[4]].
+According to the inputs provided, the corresponding model will be selected. For a better comprehension of the implemented approches, please refer to previously published literature [[3]] [[4]].
 
 
 <br></br>
 
 ## Glossary
 
-* **Quantum center** (QC): portion of the system to be described on a quantum-mechanical level.
+* **Quantum center** (QC): portion of the system to be described at a quantum-mechanical level.
 <br></br>
 
 ## References
