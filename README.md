@@ -29,7 +29,7 @@ conda activate pmm
 
 Now we are ready to install all the packages required to run PyMM:
 ```
-conda install numpy matplotlib scipy numba
+conda install numpy matplotlib scipy numba pandas seaborn
 ```
 ```
 conda config --add channels conda-forge
