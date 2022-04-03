@@ -82,7 +82,6 @@ def eig_corr_tot(eig, state, save_fn, dpi, bins):
 
     ext = get_ext(save_fn)
 
-    plt.tight_layout()
 
     plt.savefig(save_fn[:-4] + '.' + ext, dpi=dpi, format=ext)
     logging.info('\n * Correlation plot between all states'
@@ -93,6 +92,10 @@ def eig_corr_tot(eig, state, save_fn, dpi, bins):
 def eig_hist(eig, n_states, save_fn, dpi):
     '''
     '''
+    
+    plt.rcParams['font.size'] = 22
+    plt.rcParams['legend.fontsize'] = 20
+    plt.rcParams['axes.linewidth'] = 1.5
 
     plt.style.use('seaborn-colorblind')
 
