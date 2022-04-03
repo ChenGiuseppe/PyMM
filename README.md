@@ -35,7 +35,7 @@ conda install numpy matplotlib scipy numba pandas seaborn
 conda config --add channels conda-forge
 ```
 ```
-conda install mdanalysis
+conda install mdanalysis=2.0.0
 ```
 
 Move to the folder that contains setup.py and use the command:
