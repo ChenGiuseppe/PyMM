@@ -151,8 +151,8 @@ Example 1: select atoms from 1 to 5:
 ### eig
 **eig** is a tool to analyse the perturbed electronic states corresponding eigenvectors after the MD-PMM calculation. Given the dynamic nature of these states during the simulation, a straightforward description can be difficult. Therefore we provide three graphical representations which can be combined to present a clear picture of their behavior.
 
-#### **ESSENTIAL ANALYSIS**
-The contributions arising from two unperturbed states, to a selected unperturbed state, are plotted against each other.
+#### **PROJECTIONS ANALYSIS**
+The contributions arising from two unperturbed states (i.e. the projection of the perturbed wavefunction on these two states) to a selected perturbed state, are plotted against each other.
 
 Inputs
 
@@ -163,7 +163,7 @@ Inputs
 * -oc: select to plot the essential analysis.
 
 
-#### **COMPLETE ESSENTIAL ANALYSIS**
+#### **COMPLETE PROJECTIONS ANALYSIS**
 The contributions to a selected perturbed state, arising from all the unperturbed states, are plotted against each other.
 
 Inputs
