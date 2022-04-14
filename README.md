@@ -96,6 +96,7 @@ PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomi
 ```
 <state_n> <state_m> <x> <y> <z>
 ```
+where <state_n> and <state_m> are the index of the n-th and m-th electronic state
 
 * **-e** : electronic energies file (in a.u.). Each line should be formatted as:
 
