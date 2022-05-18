@@ -32,8 +32,10 @@ def calc_abs(energies: np.ndarray, pert_matrix: np.ndarray,
             energies trajectory.
         pert_matrixs (np.ndarray): (n_frames, n_states_n_states, 3) perturbed
             matrix trajectory.
-        sigma (float): TODO: #5 add description to sigma
+        sigma (float): square root of the variance of the gaussian broadening
+            expressed in a.u..
     Returns:
+        0
     '''
 
     plt.style.use('seaborn-colorblind')
