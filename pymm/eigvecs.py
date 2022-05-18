@@ -9,6 +9,12 @@ import seaborn as sns
 
 def get_ext(filename):
     '''
+    Obtain the extention of the input file.
+
+    Parameters:
+        filename (str): name of the file.
+    Returns:
+        ext (str): file extention.
     '''
 
     p = re.compile('\.([a-zA-Z]{3})')
@@ -25,6 +31,19 @@ def get_ext(filename):
 
 def eig_corr(eig, l, m, state, save_fn, dpi, bins):
     '''
+    Plot the projections of the selected perturbed electronic state
+    on the two selected unperturbed electronic states against each other.
+
+    Parameters:
+        eig (np.ndarray): eigenvectors (perturbed electronic states) trajectory.
+        l (int): first unperturbed state.
+        m (int): second unperturbed state.
+        state (int): perturbed state to be considered.
+        save_fn (str): filename of the obtained figure.
+        dpi (int): dpi of the output figure.
+        bins (int): number of bins for the 2D histogram.
+    Returns:
+        None
     '''
 
     fig, ax = plt.subplots(1, 1)
@@ -56,6 +75,17 @@ def eig_corr(eig, l, m, state, save_fn, dpi, bins):
 
 def eig_corr_tot(eig, state, save_fn, dpi, bins):
     '''
+    Plot the projections of a selected perturbed state on all the unperturbed states against
+    each other.
+
+    Parameters:
+        eig (np.ndarray): eigenvectors (perturbed electronic states) trajectory.
+        state (int): selected perturbed state.
+        save_fn (str): filename of the obtained figure.
+        dpi (int): dpi of the output figure.
+        bins (int): number of bins for the 2D histograms.
+    Returns:
+        None
     '''
 
     plt.rcParams['font.size'] = 22
@@ -91,6 +121,18 @@ def eig_corr_tot(eig, state, save_fn, dpi, bins):
 
 def eig_hist(eig, n_states, save_fn, dpi):
     '''
+    Cumulative histograms representing the squared projections from each 
+    unperturbed state to each perturbed state averaged over the whole
+    trajectory.
+    
+    Parameters:
+        eig (np.ndarray): eigenvectors (perturbed electronic states) trajectory.
+        state (int): highest perturbed and unperturbed state to be considered
+                     explicitly in the figure.
+        save_fn (str): filename of the obtained figure.
+        dpi (int): dpi of the output figure.
+    Returns:
+        None.
     '''
     
     plt.rcParams['font.size'] = 22
