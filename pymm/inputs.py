@@ -224,11 +224,6 @@ def read_pmm_inputs(cmdline):
 
     qc = read_raw_inputs(cmdline.ref_geom, cmdline.dip_matrix,
                                cmdline.energies, cmdline.charges)
-    '''if '.tpr' in cmdline.topology_path and '.xtc' in cmdline.trajectory_path:
-            mm_traj = mda.Universe(cmdline.topology_path,
-                                   cmdline.trajectory_path)
-    elif not '.xtc' in cmdline.trajectory_path:
-        raise IOError('XTC file was not provided.')'''
     if '.dat' in cmdline.topology_path:
         logging.info(' * A formatted text file with '
                         'the MD simulation system charges was provided instead'
