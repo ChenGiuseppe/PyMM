@@ -74,7 +74,7 @@ def main():
                             default='pymm_eigvecs.npy', help='Perturbed '
                             'eigenvectors trajectory (default: pymm_eigvecs.npy)')
     parser_abs.add_argument('-sigma', action='store', type=float,
-                            default=0.05, help='Value of the gaussian '
+                            default=0.05, help='Square root of the variance of the gaussian '
                             'broadening applied to the signal (expressed in eV). Default: 0.05 eV.')
     parser_abs.add_argument('-xtr', '--extra-range', action='store', type=float,
                             default=0.005, help='Additional value to add to the'
