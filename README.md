@@ -115,7 +115,7 @@ where <state_n> and <state_m> are the indices of the n-th and m-th electronic st
 * **-traj** : XTC file of the MD trajectory.
 
 * **-top** : TPR file corresponding to the XTC file. It is necessary to obtain the topology and the MM charges.
-> **NOTE**: As an alternative, a text file listing the indexes and the charge of the atoms in the MD simulation can be used as the topology file.
+> **NOTE**: As an alternative, a text file listing the indexes and the charge of the atoms in the MD simulation can be used as the topology file. The file needs to be saved with the *.dat* extention in order to be recognized by PyMM.
 
 * -q : QC total charge. By default is 0.
 
