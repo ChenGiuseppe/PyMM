@@ -216,9 +216,7 @@ def read_pmm_inputs(cmdline):
             "energies": electronic states energies in a.u. (numpy.darray,
                 shape=n_el_states).
             "dip_matrix": electric dipole moment matrix in a.u. (numpy.darray,
-                shape=(n_el_states, n_el_states, 3)). INCOMPLETE: values
-                only for the (0,i), (i,0) and the (el_state, el_state)
-                elements.
+                shape=(n_el_states, n_el_states, 3)).
             "charges": RESP charges for the el_state electronic state
                 (numpy.darray, shape=(n_el_states, n_atoms)).
         mm_traj (mda.Universe): MM simulation trajectory.
@@ -226,36 +224,39 @@ def read_pmm_inputs(cmdline):
 
     qc = read_raw_inputs(cmdline.ref_geom, cmdline.dip_matrix,
                                cmdline.energies, cmdline.charges)
-    if '.tpr' in cmdline.topology_path and '.xtc' in cmdline.trajectory_path:
+    '''if '.tpr' in cmdline.topology_path and '.xtc' in cmdline.trajectory_path:
             mm_traj = mda.Universe(cmdline.topology_path,
                                    cmdline.trajectory_path)
     elif not '.xtc' in cmdline.trajectory_path:
-        raise IOError('XTC file was not provided.')
-    elif not '.tpr' in cmdline.topology_path:
+        raise IOError('XTC file was not provided.')'''
+    if '.dat' in cmdline.topology_path:
+        logging.info(' * A formatted text file with '
+                        'the MD simulation system charges was provided instead'
+                        'of a proprietary topology file.')
+        logging.warning('\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
+                            '!     The atoms order in the reference geometry must match the order     !\n'
+                            '!     in the MD simulation.                                              !\n'
+                            '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n')
+        traj_charges = np.loadtxt(cmdline.topology_path)
+        mm_traj = mda.Universe(cmdline.trajectory_path)
         try:
-            logging.info(' * TPR file was not provided. A formatted text file with '
-                         'the MD simulation system charges was provided instead.')
-            logging.warning('\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'
-                              '!     The atoms order in the reference geometry must match the order     !\n'
-                              '!     in the MD simulation.                                              !\n'
-                              '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n')
-            traj_charges = np.loadtxt(cmdline.topology_path)
-            mm_traj = mda.Universe(cmdline.trajectory_path)
-            try:
-                traj_charges = traj_charges[:,1]
-            except:
-                pass
-            mm_traj.add_TopologyAttr('charges', traj_charges)
-            masses = np.zeros_like(traj_charges)
-            #masses[:qc.geom.shape[0]] = qc.geom[:,0]
-            mm_traj.add_TopologyAttr('masses', masses)
-            new_qc_indexes = ' or bynum '.join(cmdline.mm_indexes.split(','))
-            #qc_traj = mm_traj.select_atoms(f'bynum {cmdline.mm_indexes}')
-            qc_traj = mm_traj.select_atoms(f'bynum {new_qc_indexes}')
-            qc_traj.atoms.masses = qc.geom[:,0]
-        except IOError:
-            logging.error('Topology file format not recognized/supported.' +
-                          'See the documentation.')
+            traj_charges = traj_charges[:,1]
+        except:
+            pass
+        mm_traj.add_TopologyAttr('charges', traj_charges)
+        masses = np.zeros_like(traj_charges)
+        #masses[:qc.geom.shape[0]] = qc.geom[:,0]
+        mm_traj.add_TopologyAttr('masses', masses)
+        new_qc_indexes = ' or bynum '.join(cmdline.mm_indexes.split(','))
+        #qc_traj = mm_traj.select_atoms(f'bynum {cmdline.mm_indexes}')
+        qc_traj = mm_traj.select_atoms(f'bynum {new_qc_indexes}')
+        qc_traj.atoms.masses = qc.geom[:,0]
+        #except IOError:
+        #    logging.error('Topology file format not recognized/supported.' +
+        #                  'See the documentation.')
+    else:
+        mm_traj = mda.Universe(cmdline.topology_path,
+                                cmdline.trajectory_path)        
     #print(mm_traj.atoms.masses)
     #print(mm_traj.atoms.charges)
 
