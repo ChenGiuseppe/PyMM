@@ -196,7 +196,7 @@ pymm calc_abs -dm dipmat -el eigvals.dat -ev eigvecs.npy -sigma [0.0003] -ot [ab
 * **-dm**: electric dipole matrix file (in a.u.) used in the MD-PMM calculation.
 * -el: trajectory of the perturbed eigenvalues.
 * -ev: trajectory of the perturbed eigenvectors.
-* -sigma: value of the gaussian broadening applied to the signal (expressed in eV). Default: 0.05 eV.
+* -sigma: square root of the variance of the gaussian broadening applied to the signal (expressed in eV). Default: 0.05 eV.
 
 #### OUTPUTS
 * -ot: calculated absorption spectra names prefix (default: abs_spectrum). Both the total spectrum and each individual transitions will be printed.
