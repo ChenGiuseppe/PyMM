@@ -2,8 +2,17 @@ import numpy as np
 
 def calc_dA(T, en_ini, en_fin, state):
     '''
-    The variable state indicates the state of the
-    ensemble over the average is performed.
+    Calculate the reaction free energy change considering a single
+    ensemble.
+
+    Parameters:
+        T (float): temperature of the system.
+        en_ini (np.ndarray): perturbed energies trajectory of
+            the initial state (expressed in atomic units).
+        en_fin (np.ndarray): perturbed energies trajectory of
+            the final state (expressed in atomic units).
+    Returns:
+        dA (float): reaction free energy change (expressed in ...).
     '''
 
     # en_ini = np.loadtxt(file_en_ini)[:,]
@@ -30,9 +39,8 @@ def calc_dA(T, en_ini, en_fin, state):
 
 def calc_dA_mean(T, en_ini_ens_ini, en_fin_ens_ini, en_ini_ens_fin, en_fin_ens_fin):
     '''
-    This function calls calc_dA in order to calculate
-    the Free Energy difference in one or two ensemble.
-    The variable nens controls the number of ensemble used. 
+    Calculate the reaction free energy change considered as the mean calculated over
+    two ensembles (initial state and final state).
     '''
 
     dA_ini = calc_dA(T, en_ini_ens_ini, en_fin_ens_ini, state = 'ini')
