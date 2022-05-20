@@ -21,5 +21,9 @@ au2eV = 27.2113961
 Debye2au = 0.393456
 Bohr2Ang = 0.529177249
 
+#
+k_B = 8.617333*10**(-5) # eV/K
+R = 8.314 # J/(K*mol)
+
 if __name__ == '__main__':
     pass

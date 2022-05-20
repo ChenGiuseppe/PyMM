@@ -1,4 +1,5 @@
 import numpy as np
+import pymm.conversions as conv
 
 def calc_dA(T, en_ini, en_fin, state):
     '''
@@ -12,7 +13,7 @@ def calc_dA(T, en_ini, en_fin, state):
         en_fin (np.ndarray): perturbed energies trajectory of
             the final state (expressed in atomic units).
     Returns:
-        dA (float): reaction free energy change (expressed in ...).
+        dA (float): reaction free energy change (expressed in J/mol).
     '''
 
     # en_ini = np.loadtxt(file_en_ini)[:,]
@@ -23,16 +24,11 @@ def calc_dA(T, en_ini, en_fin, state):
     if state == 'ini':
         sgn = -1
     if state == 'fin':
-        sgn = +1
+        sgn = 1
 
-    q = np.exp((sgn*delta*27.211386*(10**5)/(8.617333*T))).mean()
+    q = np.exp((sgn*delta*conv.au2eV/(conv.k_B*T))).mean()
 
-
-    # Boltzmann's constant in eV/K
-    # k_B = 8.617333*10^(-5) eV/K
-
-    R = 8.314 # J/(K*mol)
-    dA = sgn*R*T*np.log(q)
+    dA = sgn*conv.R*T*np.log(q)
 
     return dA
 
@@ -51,4 +47,4 @@ def calc_dA_mean(T, en_ini_ens_ini, en_fin_ens_ini, en_ini_ens_fin, en_fin_ens_f
     return dA_mean
 
 if __name__ == '__main__':
-    calc_dA_mean(278, 'en_n_ens_n', 'en_rc_ens_n', 'en_n_ens_rc', 'en_rc_ens_rc')
+   pass
