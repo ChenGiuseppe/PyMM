@@ -231,7 +231,7 @@ def main():
 
         logging.info('==========================================================================\n'
                      '|                                                                        |\n'
-                     '|                     Calculate Free Energy:                             |\n'
+                     '|                     Calculate Free Energy Change:                      |\n'
                      '|                                                                        |\n'
                      '==========================================================================\n')
 
@@ -307,7 +307,7 @@ def main():
             raise IOError('Input files provided incorrectly. See documentation.')
 
         logging.info('================================= RESULTS ================================\n'
-                     '                     * Calculated Free Energy:\n'
+                     '                     * Calculated Free Energy Change:\n'
                      '                       {} J/mol\n'.format(dA) +
                      '==========================================================================\n')
 
