@@ -19,7 +19,7 @@ pymm calc_abs -dm data/dipmat.dat -el TEST_WATER_CHARGES_eigvals.dat -ev TEST_WA
 ```
 pymm eig -first 1 -last 2 -state 1 -i TEST_WATER_CHARGES_eigvecs.npy -oc
 ```
-4. Pertur eigenvectors projection analysis
+4. Perturbed eigenvectors projection analysis
 ```
 pymm eig -state 1 -i TEST_WATER_CHARGES_eigvecs.npy -ot
 ```
