@@ -233,6 +233,10 @@ According to the inputs provided, the corresponding model will be selected. For 
 
 <br></br>
 
+## Tests 
+
+All the input files needed to run PyMM on three different systems (water, doxorubicin and guanosine in solution) can be found in the "tests" subdirectory.
+
 ## Glossary
 
 * **Quantum center** (QC): portion of the system described at quantum-mechanical level.
