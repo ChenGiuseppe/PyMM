@@ -1,4 +1,4 @@
-Example of MD-PMM simulation using PyMM: Mmlecule of water in water box.
+Example of MD-PMM simulation using PyMM: Molecule of water in water box.
 
 1. Run the MD-PMM simulation:
 * in the dipole approximation:
