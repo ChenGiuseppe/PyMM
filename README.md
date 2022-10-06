@@ -113,6 +113,7 @@ where <state_n> and <state_m> are the indices of the n-th and m-th electronic st
 >**NOTE**: -ch is optional. When it is provided, the MD-PMM calculation will be performed by expanding the perturbation operator on each of atom of the QC [[2]](#2). If the QC atomic charges are not provided, by default **run_pmm** will run the calculation using the dipole approximation [[1]](#1).
 
 * **-traj** : XTC file of the MD trajectory.
+> **NOTE**: The quantum center needs to be centered in the simulation box before using the MD trajectory for the MD-PMM calculation.
 
 * **-top** : TPR file corresponding to the XTC file. It is necessary to obtain the topology and the MM charges.
 > **NOTE**: As an alternative, a text file listing the indexes and the charge of the atoms in the MD simulation can be used as the topology file. The file needs to be saved with the *.dat* extention in order to be recognized by PyMM.
