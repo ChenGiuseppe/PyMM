@@ -250,3 +250,11 @@ Aschi, M., Spezia, R., Di Nola, A., & Amadei, A. (2001). A first-principles meth
 <a id="2">[2]</a>
 Zanetti-Polzi, L., Del Galdo, S., Daidone, I., D'Abramo, M., Barone, V., Aschi, M., & Amadei, A. (2018). Extending the perturbed matrix method beyond the dipolar approximation: comparison of different levels of theory. _Physical Chemistry Chemical Physics_, 20(37), 24369-24378, https://doi.org/10.1039/C8CP04190C.
 
+<a id="3">[3]</a>
+Amadei, A., Daidone, I., Bortolotti, C. A. A general statistical mechanical approach for
+modeling redox thermodynamics: the reaction and reorganization free energies. RSC
+Adv. 2013, 3, 19657–19665.
+
+<a id="4">[4]</a>
+Chen, C. G., Nardi, A. N., Amadei, A., D’Abramo, M. Theoretical Modeling of Redox
+Potentials of Biomolecules. Molecules 2022, 27 
