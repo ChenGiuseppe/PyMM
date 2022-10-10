@@ -1,6 +1,6 @@
 # PyMM
 
-PyMM is a program that allows you to easily apply the Perturbed Matrix Method [[1]](#1) to MD simulations (PMM-MD). In addition to the application of the method, it includes a suite of tools for:
+PyMM is a program that allows you to easily apply the Perturbed Matrix Method [[1]](#pmm) to MD simulations (PMM-MD). In addition to the application of the method, it includes a suite of tools for:
 - the analysis of the dynamical behaviour of the electronic states 
 - the evulation of the electronic properties during the MD trajctory
 - the prediction of experimental properties such as the absorption spectrum and the free energy differences between two electronic states.
@@ -110,7 +110,7 @@ where <state_n> and <state_m> are the indices of the n-th and m-th electronic st
 <atom1 state1 charge> <atom2 state1 charge> ...
 <atom1 state2 charge> <atom2 state2 charge> ...
 ```
->**NOTE**: -ch is optional. When it is provided, the MD-PMM calculation will be performed by expanding the perturbation operator on each of atom of the QC [[2]](#2). If the QC atomic charges are not provided, by default **run_pmm** will run the calculation using the dipole approximation [[1]](#1).
+>**NOTE**: -ch is optional. When it is provided, the MD-PMM calculation will be performed by expanding the perturbation operator on each of atom of the QC [[2]](#atom-pmm). If the QC atomic charges are not provided, by default **run_pmm** will run the calculation using the dipole approximation [[1]](#pmm).
 
 * **-traj** : XTC file of the MD trajectory.
 > **NOTE**: The quantum center needs to be centered in the simulation box before using the MD trajectory for the MD-PMM calculation.
@@ -229,7 +229,7 @@ Three different approaches can be adopted to the calculation of free energy in t
 2. Considering only the final ensemble: -eif and -eff need to be provided.
 3. Considering the average between the two ensembles: -eii, -efi, -eif and -eff are all necessary for the calculation.
 
-According to the inputs provided, the corresponding model will be selected. For a better comprehension of the implemented approches, please refer to previously published literature [[3]] [[4]].
+According to the inputs provided, the corresponding model will be selected. For a better comprehension of the implemented approches, please refer to previously published literature [[3]](#free-en-1) [[4]](#free-en-rev).
 
 
 <br></br>
@@ -244,17 +244,17 @@ All the input files needed to run PyMM on three different systems (water, doxoru
 <br></br>
 
 ## References
-<a id="1">[1]</a>
+<a id="pmm">[1]</a>
 Aschi, M., Spezia, R., Di Nola, A., & Amadei, A. (2001). A first-principles method to model perturbed electronic wavefunctions: the effect of an external homogeneous electric field. _Chemical physics letters_, 344(3-4), 374-380, https://doi.org/10.1016/S0009-2614(01)00638-8.
 
-<a id="2">[2]</a>
+<a id="atom-pmm">[2]</a>
 Zanetti-Polzi, L., Del Galdo, S., Daidone, I., D'Abramo, M., Barone, V., Aschi, M., & Amadei, A. (2018). Extending the perturbed matrix method beyond the dipolar approximation: comparison of different levels of theory. _Physical Chemistry Chemical Physics_, 20(37), 24369-24378, https://doi.org/10.1039/C8CP04190C.
 
-<a id="3">[3]</a>
+<a id="free-en1">[3]</a>
 Amadei, A., Daidone, I., Bortolotti, C. A. A general statistical mechanical approach for
 modeling redox thermodynamics: the reaction and reorganization free energies. RSC
 Adv. 2013, 3, 19657–19665.
 
-<a id="4">[4]</a>
+<a id="free-en-rev">[4]</a>
 Chen, C. G., Nardi, A. N., Amadei, A., D’Abramo, M. Theoretical Modeling of Redox
 Potentials of Biomolecules. Molecules 2022, 27 
