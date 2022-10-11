@@ -191,7 +191,7 @@ Inputs
 
 ### calc_abs
 
-**calc_abs** is a program used to calculate the absorption spectrum of the perturbed QC. After running the MD-PMM calculation you can obtain the absorption spectrum from the output files using:
+**calc_abs** is a program used to calculate the absorption spectrum of the perturbed QC [[3]](#formald-uv). After running the MD-PMM calculation you can obtain the absorption spectrum from the output files using:
 
 ```
 pymm calc_abs -dm dipmat -el eigvals.dat -ev eigvecs.npy -sigma [0.0003] -ot [abs_spectrum]
@@ -233,7 +233,7 @@ Three different approaches can be adopted to the calculation of free energy in t
 2. Considering only the final ensemble: -eif and -eff need to be provided.
 3. Considering the average between the two ensembles: -eii, -efi, -eif and -eff are all necessary for the calculation.
 
-According to the inputs provided, the corresponding model will be selected. For a better comprehension of the implemented approches, please refer to previously published literature [[3]](#free-en-1) [[4]](#free-en-rev).
+According to the inputs provided, the corresponding model will be selected. For a better comprehension of the implemented approches, please refer to previously published literature [[4]](#free-en-1) [[5]](#free-en-rev).
 
 
 <br></br>
@@ -254,8 +254,11 @@ Aschi, M., Spezia, R., Di Nola, A., & Amadei, A. (2001). A first-principles meth
 <a id="atom-pmm">[2]</a>
 Zanetti-Polzi, L., Del Galdo, S., Daidone, I., D'Abramo, M., Barone, V., Aschi, M., & Amadei, A. (2018). Extending the perturbed matrix method beyond the dipolar approximation: comparison of different levels of theory. _Physical Chemistry Chemical Physics_, 20(37), 24369-24378, https://doi.org/10.1039/C8CP04190C.
 
-<a id="free-en1">[3]</a>
-Amadei, A., Daidone, I., Bortolotti, C. A. (2013). A general statistical mechanical approach for modeling redox thermodynamics: the reaction and reorganization free energies. _RSC Advances_, 3, 19657–19665.
+<a id="formald-uv">[3]</a>
+A. Amadei, M. D’Abramo, C. Zazza, M. Aschi (2003), Electronic properties of formaldehyde in water: a theoretical study, _Chemical Physics Letters_, 381(1–2), 187-193, https://doi.org/10.1016/j.cplett.2003.09.126.
 
-<a id="free-en-rev">[4]</a>
-Chen, C. G., Nardi, A. N., Amadei, A., D’Abramo, M. (2022) Theoretical Modeling of Redox Potentials of Biomolecules. _Molecules_, 27 
+<a id="free-en1">[4]</a>
+Amadei, A., Daidone, I., Bortolotti, C. A. (2013). A general statistical mechanical approach for modeling redox thermodynamics: the reaction and reorganization free energies. _RSC Advances_, 3, 19657–19665, https://doi.org/10.1039/C3RA42842G
+
+<a id="free-en-rev">[5]</a>
+Chen, C. G., Nardi, A. N., Amadei, A., D’Abramo, M. (2022) Theoretical Modeling of Redox Potentials of Biomolecules. _Molecules_, 27, https://doi.org/10.3390/molecules27031077
