@@ -60,6 +60,9 @@ def main():
     parser_pmm.add_argument('-o', '--output', action='store', type=str,
                         default='pymm', help='job name used to name the '
                         'output files (default: pymm)')
+    parser_pmm.add_argument('--pre-diag', action='store_true',
+                            help='Request the perturbed Hamiltonian matrix '
+                            'diagonal elements')
 
     # Calculate absorption spectra.
     parser_abs = subparsers.add_parser('calc_abs',

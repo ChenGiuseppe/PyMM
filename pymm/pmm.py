@@ -550,6 +550,14 @@ def pmm(cmdline):
                         qc.energies.shape[0],
                         qc.energies.shape[0]))
 
+    if cmdline.pre_diag:
+        logging.info('==========================================================================\n'
+                     '|                                                                        |\n'
+                     '|      You requested the diagonal elements of the pre-diagonalized       |\n'
+                     '|                  perturbed Hamiltonian matrix to be written            |\n'
+                     '|                                                                        |\n'
+                     '==========================================================================\n')
+        pre_diags = np.zeros_like(eigvals)
     # print(mm_traj.atoms.charges)
     # print(qc_traj.atoms.center_of_mass().dtype,
     #       solv_traj.atoms.positions.dtype)
@@ -583,11 +591,17 @@ def pmm(cmdline):
         # eigvecs.append(eigvec)
         eigvals[i, :] = eigval
         eigvecs[i, :, :] = eigvec
+        if cmdline.pre_diag:
+            pre_diags[i, :] = pmm_matrix.diagonal() 
         # print('eigenvec', eigvec)
 
     np.savetxt('{}_eigvals.dat'.format(cmdline.output), eigvals,
                header='Perturbed QC energies:')
     np.save('{}_eigvecs'.format(cmdline.output), eigvecs)
+
+    if cmdline.pre_diag:
+        np.savetxt('{}_pre_diags.dat'.format(cmdline.output), eigvals,
+                   header='Perturbed Hamiltonian matrix diagonal elements:')
 
     xyz_fn = '{}_qc_geom.xyz'.format(cmdline.output)
     write_geom(xyz_fn, qc.geom)
