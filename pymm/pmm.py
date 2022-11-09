@@ -600,7 +600,7 @@ def pmm(cmdline):
     np.save('{}_eigvecs'.format(cmdline.output), eigvecs)
 
     if cmdline.pre_diag:
-        np.savetxt('{}_pre_diags.dat'.format(cmdline.output), eigvals,
+        np.savetxt('{}_pre_diags.dat'.format(cmdline.output), pre_diags,
                    header='Perturbed Hamiltonian matrix diagonal elements:')
 
     xyz_fn = '{}_qc_geom.xyz'.format(cmdline.output)
