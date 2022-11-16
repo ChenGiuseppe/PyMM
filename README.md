@@ -5,9 +5,7 @@ PyMM is a program that allows you to easily apply the Perturbed Matrix Method [[
 - the evulation of the electronic properties during the MD trajctory
 - the prediction of experimental properties such as the absorption spectrum and the free energy differences between two electronic states.
 
-```
-Please check this repository again and read the paper about the PyMM project when it comes out!
-```
+For more informations please read the article about PyMM [[2]](#pymm).
 
 ## Installation
 
@@ -114,7 +112,7 @@ where <state_n> and <state_m> are the indices of the n-th and m-th electronic st
 <atom1 state1 charge> <atom2 state1 charge> ...
 <atom1 state2 charge> <atom2 state2 charge> ...
 ```
->**NOTE**: -ch is optional. When it is provided, the MD-PMM calculation will be performed by expanding the perturbation operator on each of atom of the QC [[2]](#atom-pmm). If the QC atomic charges are not provided, by default **run_pmm** will run the calculation using the dipole approximation [[1]](#pmm).
+>**NOTE**: -ch is optional. When it is provided, the MD-PMM calculation will be performed by expanding the perturbation operator on each of atom of the QC [[3]](#atom-pmm). If the QC atomic charges are not provided, by default **run_pmm** will run the calculation using the dipole approximation [[1]](#pmm).
 
 * **-traj** : XTC file of the MD trajectory.
 > **NOTE**: The quantum center needs to be centered in the simulation box before using the MD trajectory for the MD-PMM calculation.
@@ -191,7 +189,7 @@ Inputs
 
 ### calc_abs
 
-**calc_abs** is a program used to calculate the absorption spectrum of the perturbed QC [[3]](#formald-uv). After running the MD-PMM calculation you can obtain the absorption spectrum from the output files using:
+**calc_abs** is a program used to calculate the absorption spectrum of the perturbed QC [[4]](#formald-uv). After running the MD-PMM calculation you can obtain the absorption spectrum from the output files using:
 
 ```
 pymm calc_abs -dm dipmat -el eigvals.dat -ev eigvecs.npy -sigma [0.0003] -ot [abs_spectrum]
@@ -233,7 +231,7 @@ Three different approaches can be adopted to the calculation of free energy in t
 2. Considering only the final ensemble: -eif and -eff need to be provided.
 3. Considering the average between the two ensembles: -eii, -efi, -eif and -eff are all necessary for the calculation.
 
-According to the inputs provided, the corresponding model will be selected. For a better comprehension of the implemented approches, please refer to previously published literature [[4]](#free-en-1) [[5]](#free-en-rev).
+According to the inputs provided, the corresponding model will be selected. For a better comprehension of the implemented approches, please refer to previously published literature [[5]](#free-en-1) [[6]](#free-en-rev).
 
 
 <br></br>
@@ -251,14 +249,17 @@ All the input files needed to run PyMM on three different systems (water, doxoru
 <a id="pmm">[1]</a>
 Aschi, M., Spezia, R., Di Nola, A., & Amadei, A. (2001). A first-principles method to model perturbed electronic wavefunctions: the effect of an external homogeneous electric field. _Chemical physics letters_, 344(3-4), 374-380, https://doi.org/10.1016/S0009-2614(01)00638-8.
 
-<a id="atom-pmm">[2]</a>
+<a id="pmm">[2]</a>
+Chen, C. G., Nardi, A. N., Amadei, A., & D’Abramo M. Journal of Chemical Theory and Computation, Article ASAP, DOI: 10.1021/acs.jctc.2c00767
+
+<a id="atom-pmm">[3]</a>
 Zanetti-Polzi, L., Del Galdo, S., Daidone, I., D'Abramo, M., Barone, V., Aschi, M., & Amadei, A. (2018). Extending the perturbed matrix method beyond the dipolar approximation: comparison of different levels of theory. _Physical Chemistry Chemical Physics_, 20(37), 24369-24378, https://doi.org/10.1039/C8CP04190C.
 
-<a id="formald-uv">[3]</a>
+<a id="formald-uv">[4]</a>
 A. Amadei, M. D’Abramo, C. Zazza, M. Aschi (2003), Electronic properties of formaldehyde in water: a theoretical study, _Chemical Physics Letters_, 381(1–2), 187-193, https://doi.org/10.1016/j.cplett.2003.09.126.
 
-<a id="free-en1">[4]</a>
+<a id="free-en1">[5]</a>
 Amadei, A., Daidone, I., Bortolotti, C. A. (2013). A general statistical mechanical approach for modeling redox thermodynamics: the reaction and reorganization free energies. _RSC Advances_, 3, 19657–19665, https://doi.org/10.1039/C3RA42842G
 
-<a id="free-en-rev">[5]</a>
+<a id="free-en-rev">[6]</a>
 Chen, C. G., Nardi, A. N., Amadei, A., D’Abramo, M. (2022) Theoretical Modeling of Redox Potentials of Biomolecules. _Molecules_, 27, https://doi.org/10.3390/molecules27031077
