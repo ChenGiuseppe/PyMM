@@ -5,7 +5,7 @@ PyMM is a program that allows you to easily apply the Perturbed Matrix Method [[
 - the evulation of the electronic properties during the MD trajctory
 - the prediction of experimental properties such as the absorption spectrum and the free energy differences between two electronic states.
 
-For more informations please read the article about PyMM [[2]](#pymm).
+For more informations please read the article about PyMM [[2]](#pymm-article).
 
 ## Installation
 
@@ -249,8 +249,8 @@ All the input files needed to run PyMM on three different systems (water, doxoru
 <a id="pmm">[1]</a>
 Aschi, M., Spezia, R., Di Nola, A., & Amadei, A. (2001). A first-principles method to model perturbed electronic wavefunctions: the effect of an external homogeneous electric field. _Chemical physics letters_, 344(3-4), 374-380, https://doi.org/10.1016/S0009-2614(01)00638-8.
 
-<a id="pymm">[2]</a>
-Chen, C. G., Nardi, A. N., Amadei, A., & D’Abramo M. Journal of Chemical Theory and Computation, Article ASAP, DOI: 10.1021/acs.jctc.2c00767
+<a id="pymm-article">[2]</a>
+Chen, C. G., Nardi, A. N., Amadei, A., & D’Abramo M. _Journal of Chemical Theory and Computation_, __Article ASAP__, https://doi.org/10.1021/acs.jctc.2c00767.
 
 <a id="atom-pmm">[3]</a>
 Zanetti-Polzi, L., Del Galdo, S., Daidone, I., D'Abramo, M., Barone, V., Aschi, M., & Amadei, A. (2018). Extending the perturbed matrix method beyond the dipolar approximation: comparison of different levels of theory. _Physical Chemistry Chemical Physics_, 20(37), 24369-24378, https://doi.org/10.1039/C8CP04190C.
