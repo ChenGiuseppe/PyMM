@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use PyMM, please cite it as below!"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Chen"
+    given-names: "Cheng Giuseppe"
+    orcid: "https://orcid.org/0000-0003-3553-4718"
+  - family-names: "Nardi"
+    given-names: "Alessandro Nicola"
+    orcid: "https://orcid.org/0000-0002-0959-1690"
+  - family-names: "Amadei"
+    given-names: "Andrea"
+    orcid: "https://orcid.org/0000-0001-9488-0536"
+  - family-names: "D'Abramo"
+    given-names: "Marco"
+    orcid: "https://orcid.org/0000-0001-6020-8581"
+  doi: "https://doi.org/10.1021/acs.jctc.2c00767"
+  journal: "Journal of Chemical Theory and Computation"
+  #month: 9
+  #start: 1 # First page number
+  #end: 10 # Last page number
+  title: "PyMM: An Open-Source Python Program for QM/MM Simulations Based on the Perturbed Matrix Method"
+  #issue: 1
+  #volume: 1
+  #year: 2022
+  url: "https://doi.org/10.1021/acs.jctc.2c00767"
+  eprint: "https://doi.org/10.1021/acs.jctc.2c00767"
