@@ -249,7 +249,7 @@ All the input files needed to run PyMM on three different systems (water, doxoru
 <a id="pmm">[1]</a>
 Aschi, M., Spezia, R., Di Nola, A., & Amadei, A. (2001). A first-principles method to model perturbed electronic wavefunctions: the effect of an external homogeneous electric field. _Chemical physics letters_, 344(3-4), 374-380, https://doi.org/10.1016/S0009-2614(01)00638-8.
 
-<a id="pmm">[2]</a>
+<a id="pymm">[2]</a>
 Chen, C. G., Nardi, A. N., Amadei, A., & D’Abramo M. Journal of Chemical Theory and Computation, Article ASAP, DOI: 10.1021/acs.jctc.2c00767
 
 <a id="atom-pmm">[3]</a>
