@@ -247,19 +247,19 @@ All the input files needed to run PyMM on three different systems (water, doxoru
 
 ## References
 <a id="pmm">[1]</a>
-Aschi, M., Spezia, R., Di Nola, A., & Amadei, A. (2001). A first-principles method to model perturbed electronic wavefunctions: the effect of an external homogeneous electric field. _Chemical physics letters_, 344(3-4), 374-380, https://doi.org/10.1016/S0009-2614(01)00638-8.
+Aschi, M., Spezia, R., Di Nola, A., and Amadei, A. (2001). A first-principles method to model perturbed electronic wavefunctions: the effect of an external homogeneous electric field. _Chemical physics letters_, 344(3-4), 374-380, https://doi.org/10.1016/S0009-2614(01)00638-8.
 
 <a id="pymm-article">[2]</a>
-Chen, C. G., Nardi, A. N., Amadei, A., & D’Abramo M. _Journal of Chemical Theory and Computation_, __Article ASAP__, https://doi.org/10.1021/acs.jctc.2c00767.
+Chen, C. G., Nardi, A. N., Amadei, A., and D’Abramo M. _Journal of Chemical Theory and Computation_, __Article ASAP__, https://doi.org/10.1021/acs.jctc.2c00767.
 
 <a id="atom-pmm">[3]</a>
-Zanetti-Polzi, L., Del Galdo, S., Daidone, I., D'Abramo, M., Barone, V., Aschi, M., & Amadei, A. (2018). Extending the perturbed matrix method beyond the dipolar approximation: comparison of different levels of theory. _Physical Chemistry Chemical Physics_, 20(37), 24369-24378, https://doi.org/10.1039/C8CP04190C.
+Zanetti-Polzi, L., Del Galdo, S., Daidone, I., D'Abramo, M., Barone, V., Aschi, M., and Amadei, A. (2018). Extending the perturbed matrix method beyond the dipolar approximation: comparison of different levels of theory. _Physical Chemistry Chemical Physics_, 20(37), 24369-24378, https://doi.org/10.1039/C8CP04190C.
 
 <a id="formald-uv">[4]</a>
-A. Amadei, M. D’Abramo, C. Zazza, M. Aschi (2003), Electronic properties of formaldehyde in water: a theoretical study, _Chemical Physics Letters_, 381(1–2), 187-193, https://doi.org/10.1016/j.cplett.2003.09.126.
+A. Amadei, M. D’Abramo, C. Zazza, and M. Aschi (2003), Electronic properties of formaldehyde in water: a theoretical study, _Chemical Physics Letters_, 381(1–2), 187-193, https://doi.org/10.1016/j.cplett.2003.09.126.
 
 <a id="free-en1">[5]</a>
-Amadei, A., Daidone, I., Bortolotti, C. A. (2013). A general statistical mechanical approach for modeling redox thermodynamics: the reaction and reorganization free energies. _RSC Advances_, 3, 19657–19665, https://doi.org/10.1039/C3RA42842G
+Amadei, A., Daidone, I., and Bortolotti, C. A. (2013). A general statistical mechanical approach for modeling redox thermodynamics: the reaction and reorganization free energies. _RSC Advances_, 3, 19657–19665, https://doi.org/10.1039/C3RA42842G
 
 <a id="free-en-rev">[6]</a>
-Chen, C. G., Nardi, A. N., Amadei, A., D’Abramo, M. (2022) Theoretical Modeling of Redox Potentials of Biomolecules. _Molecules_, 27, https://doi.org/10.3390/molecules27031077
+Chen, C. G., Nardi, A. N., Amadei, A., and D’Abramo, M. (2022) Theoretical Modeling of Redox Potentials of Biomolecules. _Molecules_, 27, https://doi.org/10.3390/molecules27031077
