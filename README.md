@@ -2,10 +2,10 @@
 
 PyMM is a program that allows you to easily apply the Perturbed Matrix Method [[1]](#pmm) to MD simulations (PMM-MD). In addition to the application of the method, it includes a suite of tools for:
 - the analysis of the dynamical behaviour of the electronic states 
-- the evulation of the electronic properties during the MD trajctory
+- the evaluation of the electronic properties during the MD trajctory
 - the prediction of experimental properties such as the absorption spectrum and the free energy differences between two electronic states.
 
-For more informations please read the article about PyMM [[2]](#pymm-article).
+For more information please read the article about PyMM [[2]](#pymm-article).
 
 ## Installation
 
@@ -89,7 +89,7 @@ PyMM run_pmm -g geometry -gu [units] -dm dipole_matrix -e energies -ch [QC_atomi
 <atom symbol> <x> <y> <z> 
 ```
 
-> **NOTE**: The program also accepts other types of file format. It will check and tries to correct some common errors. This is mainly done to assure the compatibility with common used software.
+> **NOTE**: The program also accepts other types of file formats. It will check and try to correct some common errors. This is mainly done to assure the compatibility with commonly used software.
 
 * -gu : units used in the QC geometry input file (default: Angstrom).
 
@@ -112,13 +112,13 @@ where <state_n> and <state_m> are the indices of the n-th and m-th electronic st
 <atom1 state1 charge> <atom2 state1 charge> ...
 <atom1 state2 charge> <atom2 state2 charge> ...
 ```
->**NOTE**: -ch is optional. When it is provided, the MD-PMM calculation will be performed by expanding the perturbation operator on each of atom of the QC [[3]](#atom-pmm). If the QC atomic charges are not provided, by default **run_pmm** will run the calculation using the dipole approximation [[1]](#pmm).
+>**NOTE**: -ch is optional. When it is provided, the MD-PMM calculation will be performed by expanding the perturbation operator on each atom of the QC [[3]](#atom-pmm). If the QC atomic charges are not provided, by default **run_pmm** will run the calculation using the dipole approximation [[1]](#pmm).
 
 * **-traj** : XTC file of the MD trajectory.
 > **NOTE**: The quantum center needs to be centered in the simulation box before using the MD trajectory for the MD-PMM calculation.
 
 * **-top** : TPR file corresponding to the XTC file. It is necessary to obtain the topology and the MM charges.
-> **NOTE**: As an alternative, a text file listing the indexes and the charge of the atoms in the MD simulation can be used as the topology file. The file needs to be saved with the *.dat* extention in order to be recognized by PyMM.
+> **NOTE**: As an alternative, a text file listing the indexes and the charge of the atoms in the MD simulation can be used as the topology file. The file needs to be saved with the *.dat* extension in order to be recognized by PyMM.
 
 * -q : QC total charge. By default is 0.
 
@@ -130,9 +130,9 @@ where <state_n> and <state_m> are the indices of the n-th and m-th electronic st
 Example 1: select atoms from 1 to 5: 
 \
 -nm 1:5
->2. Use "**,**" as the logical *or* operator.
+>2. Use "**,**" as the logical *and* operator.
 \
-> Example 2: select atoms 1 or 5:
+> Example 2: select atoms 1 and 5:
 \
 -nm 1,5
 >3. Example 3: select atoms from 1 to 5 and 7:
@@ -155,12 +155,12 @@ Example 1: select atoms from 1 to 5:
 **eig** is a tool to analyse the perturbed electronic states corresponding eigenvectors after the MD-PMM calculation. Given the dynamic nature of these states during the simulation, a straightforward description can be difficult. Therefore we provide three graphical representations which can be combined to present a clear picture of their behavior.
 
 #### **PROJECTIONS ANALYSIS**
-The contributions arising from two unperturbed states (i.e. the projection of the perturbed wavefunction on these two states) to a selected perturbed state, are plotted against each other.
+The contributions arising from two unperturbed states (i.e. the projection of the perturbed wavefunction on these two states) to a selected perturbed state are plotted against each other.
 
 Inputs
 
 * -i: eigenvectors trajectory (eigenvecs.npy).
-* -first: select the index of the an unperturbed state.
+* -first: select the index of an unperturbed state.
 * -last: select the index of another unperturbed state.
 * -state: select the perturbed state to be considered.
 * -oc: select to plot the essential analysis.
@@ -176,16 +176,16 @@ Inputs
 * -ot: select to plot the complete essential analysis.
 
 #### **CUMULATIVE HISTOGRAMS**
-The cumulative histograms of the average of contribution of each unperturbed state to each perturbed state is plotted (i.e. calculate the squared mean coefficients with each unperturbed state contributes to each perturbed state).
+The cumulative histograms of the average contribution of each unperturbed state to each perturbed state are plotted (i.e. calculate the squared mean coefficients with each unperturbed state contributing to each perturbed state).
 
 Inputs
 
 * -i: eigenvectors trajectory (eigenvecs.npy).
-* -state: select number of states to consider
+* -state: select the number of states to consider
 * -oh: select to calculate the cumulative histograms
 
 <br></br>
-> **NOTE**: Despite its semplicity in depicting the overall trends during the simulation, considering the average contribution can be misleading. This representation is preferably paired with an essential analysis.
+> **NOTE**: Despite its simplicity in depicting the overall trends during the simulation, considering the average contribution can be misleading. This representation is preferably paired with an essential analysis.
 
 ### calc_abs
 
@@ -202,7 +202,7 @@ pymm calc_abs -dm dipmat -el eigvals.dat -ev eigvecs.npy -sigma [0.0003] -ot [ab
 * -sigma: square root of the variance of the gaussian broadening applied to the signal (expressed in eV). Default: 0.05 eV.
 
 #### OUTPUTS
-* -ot: calculated absorption spectra names prefix (default: abs_spectrum). Both the total spectrum and each individual transitions will be printed.
+* -ot: calculated absorption spectra names prefix (default: abs_spectrum). Both the total spectrum and each individual transition will be printed.
 <br></br>
 ### free_en
 
@@ -225,13 +225,13 @@ pymm free_en -T 298 -eii file1 -efi file2 -eif file3 -eff file4
 |    final       |   eif   |   eff   |
 
 
-Three different approaches can be adopted to the calculation of free energy in the MD-PMM framework.
+Three different approaches can be adopted for the calculation of free energy in the MD-PMM framework.
 
 1. Considering only the initial ensemble: -eii and -efi need to be provided.
 2. Considering only the final ensemble: -eif and -eff need to be provided.
 3. Considering the average between the two ensembles: -eii, -efi, -eif and -eff are all necessary for the calculation.
 
-According to the inputs provided, the corresponding model will be selected. For a better comprehension of the implemented approches, please refer to previously published literature [[5]](#free-en-1) [[6]](#free-en-rev).
+According to the inputs provided, the corresponding model will be selected. For a better comprehension of the implemented approaches, please refer to previously published literature [[5]](#free-en-1) [[6]](#free-en-rev).
 
 
 <br></br>
